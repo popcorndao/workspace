@@ -1,0 +1,55 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ITokenManager",
+  "sourceName": "contracts/ITokenManager.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_receiver",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_start",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_cliff",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "_vested",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bool",
+          "name": "_revokable",
+          "type": "bool"
+        }
+      ],
+      "name": "assignVested",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
