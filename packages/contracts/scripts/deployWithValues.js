@@ -5,7 +5,7 @@ const bluebird = require("bluebird");
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
 async function deploy(ethers) {
-  
+
   const GrantTerm = { Month: 0, Quarter: 1, Year: 2 };
   const GrantTermMap = { 0: 'Monthly', 1: 'Quarterly', 2: 'Yearly'};
 
@@ -80,7 +80,7 @@ async function deploy(ethers) {
     await registerBeneficiariesForElection(GrantTerm.Year, this.bennies.slice(14,20));
     await displayElectionMetadata(GrantTerm.Year);
   }
-  
+
   const logResults = async () => {
     console.log({
       contracts: {
@@ -93,7 +93,6 @@ async function deploy(ethers) {
     });
   }
 
-
   await setSigners();
   await deployContracts();
   await addBeneficiariesToRegistry();
@@ -102,7 +101,7 @@ async function deploy(ethers) {
   await initializeQuarterlyElection();
   await initializeYearlyElection();
   await logResults();
-  
+
 }
 
 module.exports = {
