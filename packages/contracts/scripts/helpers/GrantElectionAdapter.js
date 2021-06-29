@@ -1,21 +1,24 @@
 module.exports = {
   GrantElectionAdapter: (contract) => {
     return {
-      electionDefaults: async (grantTerm) => {
-        const response = await contract.electionDefaults(grantTerm);
+      electionDefaults: async (electionId) => {
+        const response = await contract.electionDefaults(electionId);
         return {
           useChainLinkVRF: response.useChainLinkVRF,
           ranking: response.ranking,
           awardees: response.awardees,
-          registrationPeriod: response.registrationPeriod.toNumber(),
-          votingPeriod: response.votingPeriod.toNumber(),
-          cooldownPeriod: response.cooldownPeriod.toNumber(),
-          registrationBondRequired: response.registrationBondRequired,
-          registrationBond: response.registrationBond,
+          registrationPeriod: Number(response.registrationPeriod.toString()),
+          votingPeriod: Number(response.votingPeriod.toString()),
+          cooldownPeriod: Number(response.cooldownPeriod.toString()),
+          registrationBondRequired: response.bondRequirements.required,
+          registrationBond: response.bondRequirements.amount,
+          finalizationIncentive:response.finalizationIncentive,
+          enabled:response.enabled,
+          shareType:response.shareType
         }
       },
 
-      getElectionMetadata: async (grantTerm) => {
+      getElectionMetadata: async (electionId) => {
         /**
         * returns a nice object like:
         * {
@@ -40,7 +43,7 @@ module.exports = {
               (votes, v, i) => [...votes, {
                   voter: v[0],
                   beneficiary: v[1],
-                  weight: v[2].toNumber(),
+                  weight: v[2],
                 }],
               [],
             )
@@ -56,16 +59,20 @@ module.exports = {
           [
             "periods",
             (value) => ({
-              cooldownPeriod: value[0].toNumber(),
-              registrationPeriod: value[1].toNumber(),
-              votingPeriod: value[2].toNumber(),
+              cooldownPeriod: Number(value[0].toString()),
+              registrationPeriod: Number(value[1].toString()),
+              votingPeriod: Number(value[2].toString()),
             }),
           ],
-          ["startTime", (value) => value.toNumber()],
-          ["registrationBondRequired", (value) => value],
-          ["registrationBond", (value) => value],
+          ["startTime", (value) => Number(value.toString())],
+          [
+            'bondRequirements',
+            (value) => ({ required: value[0], amount: value[1] }),
+          ],
+          ['shareType', (value) => value],
+          ['randomNumber', (value) => Number(value.toString())],
         ];
-        return (await contract.getElectionMetadata(grantTerm)).reduce(
+        return (await contract.getElectionMetadata(electionId)).reduce(
           (metadata, value, i) => {
             metadata[mapping[i][0]] = mapping[i][1](value);
             return metadata;

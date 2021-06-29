@@ -8,6 +8,7 @@ import "./IInsurance.sol";
 import "./IBeneficiaryVaults.sol";
 import "./IRewardsManager.sol";
 import "./Owned.sol";
+import "./KeeperIncentive.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -19,13 +20,17 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
  * @title Popcorn Rewards Manager
  * @notice Manages distribution of POP rewards to Popcorn Treasury, DAO Staking, and Beneficiaries
  */
-contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
+contract RewardsManager is
+  IRewardsManager,
+  Owned,
+  ReentrancyGuard,
+  KeeperIncentive
+{
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
   uint256 public constant SWAP_TIMEOUT = 600;
 
-  IERC20 public immutable POP;
   IStaking public staking;
   ITreasury public treasury;
   IInsurance public insurance;
@@ -35,7 +40,12 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
   uint256[4] public rewardSplits;
   mapping(uint8 => uint256[2]) private rewardLimits;
 
-  enum RewardTargets {Staking, Treasury, Insurance, BeneficiaryVaults}
+  enum RewardTargets {
+    Staking,
+    Treasury,
+    Insurance,
+    BeneficiaryVaults
+  }
 
   event StakingDeposited(address to, uint256 amount);
   event TreasuryDeposited(address to, uint256 amount);
@@ -59,8 +69,7 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
     IInsurance insurance_,
     IBeneficiaryVaults beneficiaryVaults_,
     IUniswapV2Router02 uniswapV2Router_
-  ) Owned(msg.sender) {
-    POP = pop_;
+  ) Owned(msg.sender) KeeperIncentive(msg.sender, pop_) {
     staking = staking_;
     treasury = treasury_;
     insurance = insurance_;
@@ -71,6 +80,8 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
     rewardLimits[uint8(RewardTargets.Insurance)] = [0, 10e18];
     rewardLimits[uint8(RewardTargets.BeneficiaryVaults)] = [20e18, 90e18];
     rewardSplits = [32e18, 32e18, 2e18, 34e18];
+    createIncentive(block.timestamp, 1 days, 30 days, 10e18, true, false);
+    createIncentive(block.timestamp, 1 days, 30 days, 10e18, true, false);
   }
 
   receive() external payable {}
@@ -159,6 +170,7 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
   function swapTokenForRewards(address[] calldata path_, uint256 minAmountOut_)
     public
     nonReentrant
+    keeperIncentive(0)
     returns (uint256[] memory)
   {
     require(path_.length >= 2, "Invalid swap path");
@@ -173,14 +185,13 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
     require(_balance > 0, "No swappable balance");
 
     _token.safeIncreaseAllowance(address(uniswapV2Router), _balance);
-    uint256[] memory _amounts =
-      uniswapV2Router.swapExactTokensForTokens(
-        _balance,
-        minAmountOut_,
-        path_,
-        address(this),
-        block.timestamp.add(SWAP_TIMEOUT)
-      );
+    uint256[] memory _amounts = uniswapV2Router.swapExactTokensForTokens(
+      _balance,
+      minAmountOut_,
+      path_,
+      address(this),
+      block.timestamp.add(SWAP_TIMEOUT)
+    );
 
     emit TokenSwapped(path_[0], _amounts[0], _amounts[1]);
 
@@ -191,27 +202,23 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
    * @notice Distribute POP rewards to dependent RewardTarget contracts
    * @dev Contract must have POP balance in order to distribute according to rewardSplits ratio
    */
-  function distributeRewards() public nonReentrant {
+  function distributeRewards() public nonReentrant keeperIncentive(1) {
     uint256 _availableReward = POP.balanceOf(address(this));
     require(_availableReward > 0, "No POP balance");
 
     //@todo check edge case precision overflow
-    uint256 _stakingAmount =
-      _availableReward.mul(rewardSplits[uint8(RewardTargets.Staking)]).div(
-        100e18
-      );
-    uint256 _treasuryAmount =
-      _availableReward.mul(rewardSplits[uint8(RewardTargets.Treasury)]).div(
-        100e18
-      );
-    uint256 _insuranceAmount =
-      _availableReward.mul(rewardSplits[uint8(RewardTargets.Insurance)]).div(
-        100e18
-      );
-    uint256 _beneficiaryVaultsAmount =
-      _availableReward
-        .mul(rewardSplits[uint8(RewardTargets.BeneficiaryVaults)])
-        .div(100e18);
+    uint256 _stakingAmount = _availableReward
+    .mul(rewardSplits[uint8(RewardTargets.Staking)])
+    .div(100e18);
+    uint256 _treasuryAmount = _availableReward
+    .mul(rewardSplits[uint8(RewardTargets.Treasury)])
+    .div(100e18);
+    uint256 _insuranceAmount = _availableReward
+    .mul(rewardSplits[uint8(RewardTargets.Insurance)])
+    .div(100e18);
+    uint256 _beneficiaryVaultsAmount = _availableReward
+    .mul(rewardSplits[uint8(RewardTargets.BeneficiaryVaults)])
+    .div(100e18);
 
     _distributeToStaking(_stakingAmount);
     _distributeToTreasury(_treasuryAmount);
