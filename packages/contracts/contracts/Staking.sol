@@ -4,12 +4,12 @@ pragma solidity >=0.7.0 <0.8.0;
 
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./Owned.sol";
 import "./IRewardsManager.sol";
+import "./IRewardsEscrow.sol";
 import "./Defended.sol";
 
 contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
@@ -25,7 +25,9 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
   }
 
   IERC20 public immutable POP;
-  address public RewardsManager;
+  IRewardsManager public RewardsManager;
+  IRewardsEscrow public RewardsEscrow;
+  bool public initialised = false;
   uint256 public periodFinish = 0;
   uint256 public rewardRate = 0;
   uint256 public rewardsDuration = 7 days;
@@ -43,12 +45,14 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
   event StakingWithdrawn(address _address, uint256 amount);
   event RewardPaid(address _address, uint256 reward);
   event RewardAdded(uint256 reward);
-  event RewardsManagerChanged(address _rewardsManager);
+  event RewardsManagerChanged(IRewardsManager _rewardsManager);
+  event RewardsEscrowChanged(IRewardsEscrow _rewardsEscrow);
 
   /* ========== CONSTRUCTOR ========== */
 
-  constructor(IERC20 _pop) Owned(msg.sender) {
+  constructor(IERC20 _pop, IRewardsEscrow _rewardsEscrow) Owned(msg.sender) {
     POP = _pop;
+    RewardsEscrow = _rewardsEscrow;
   }
 
   /* ========== VIEWS ========== */
@@ -66,12 +70,13 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     ) {
       return 0;
     }
-    uint256 timeTillEnd =
-      ((lockedBalances[_address]._end.sub(_currentTime)).div(1 hours)).mul(
-        1 hours
-      );
-    uint256 slope =
-      voiceCredits[_address].div(lockedBalances[_address]._duration);
+    uint256 timeTillEnd = (
+      (lockedBalances[_address]._end.sub(_currentTime)).div(1 hours)
+    )
+    .mul(1 hours);
+    uint256 slope = voiceCredits[_address].div(
+      lockedBalances[_address]._duration
+    );
     return timeTillEnd.mul(slope);
   }
 
@@ -131,6 +136,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     override
     nonReentrant
     defend
+    isInitialised
     updateReward(msg.sender)
   {
     uint256 _currentTime = block.timestamp;
@@ -164,8 +170,8 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
       "withdraw balance first"
     );
     lockedBalances[msg.sender]._duration = lockedBalances[msg.sender]
-      ._duration
-      .add(lengthOfTime);
+    ._duration
+    .add(lengthOfTime);
     lockedBalances[msg.sender]._end = lockedBalances[msg.sender]._end.add(
       lengthOfTime
     );
@@ -183,8 +189,8 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     POP.safeTransferFrom(msg.sender, address(this), amount);
     totalLocked = totalLocked.add(amount);
     lockedBalances[msg.sender]._balance = lockedBalances[msg.sender]
-      ._balance
-      .add(amount);
+    ._balance
+    .add(amount);
     _recalculateVoiceCredits();
   }
 
@@ -198,8 +204,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     require(lockedBalances[msg.sender]._balance > 0, "insufficient balance");
     require(amount <= getWithdrawableBalance(msg.sender));
 
-    POP.approve(address(this), amount);
-    POP.safeTransferFrom(address(this), msg.sender, amount);
+    POP.safeTransfer(msg.sender, amount);
 
     totalLocked = totalLocked.sub(amount);
     _clearWithdrawnFromLocked(amount);
@@ -211,24 +216,36 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     uint256 reward = rewards[msg.sender];
     if (reward > 0) {
       rewards[msg.sender] = 0;
-      POP.safeTransfer(msg.sender, reward);
-      emit RewardPaid(msg.sender, reward);
+      //How to handle missing gwei?
+      uint256 payout = reward.div(uint256(3));
+      uint256 escrowed = payout.mul(uint256(2));
+
+      POP.safeTransfer(msg.sender, payout);
+      POP.safeIncreaseAllowance(address(RewardsEscrow), escrowed);
+      RewardsEscrow.lock(msg.sender, escrowed);
+
+      emit RewardPaid(msg.sender, payout);
     }
   }
 
-  function exit(uint256 amount) external {
-    withdraw(amount);
+  function exit() external {
+    withdraw(getWithdrawableBalance(msg.sender));
     getReward();
   }
 
   /* ========== RESTRICTED FUNCTIONS ========== */
 
+  function init(IRewardsManager _rewardsManager) external onlyOwner {
+    RewardsManager = _rewardsManager;
+    initialised = true;
+  }
+
   // todo: multiply voice credits by 10000 to deal with exponent math
   function _recalculateVoiceCredits() internal {
     voiceCredits[msg.sender] = lockedBalances[msg.sender]
-      ._balance
-      .mul(lockedBalances[msg.sender]._duration)
-      .div(365 days * 4);
+    ._balance
+    .mul(lockedBalances[msg.sender]._duration)
+    .div(365 days * 4);
   }
 
   function _lockTokens(uint256 amount, uint256 lengthOfTime) internal {
@@ -253,26 +270,39 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     if (lockedBalances[msg.sender]._end <= _currentTime) {
       if (_amount == lockedBalances[msg.sender]._balance) {
         delete lockedBalances[msg.sender];
-      }
-      if (_amount < lockedBalances[msg.sender]._balance) {
+      } else {
         lockedBalances[msg.sender]._balance = lockedBalances[msg.sender]
-          ._balance
-          .sub(_amount);
+        ._balance
+        .sub(_amount);
       }
     }
   }
 
-  function setRewardsManager(address _rewardsManager) external onlyOwner {
+  function setRewardsManager(IRewardsManager _rewardsManager)
+    external
+    onlyOwner
+  {
+    require(RewardsManager != _rewardsManager, "Same RewardsManager");
     RewardsManager = _rewardsManager;
     emit RewardsManagerChanged(_rewardsManager);
+  }
+
+  function setRewardsEscrow(IRewardsEscrow _rewardsEscrow) external onlyOwner {
+    require(RewardsEscrow != _rewardsEscrow, "Same RewardsEscrow");
+    RewardsEscrow = _rewardsEscrow;
+    emit RewardsEscrowChanged(_rewardsEscrow);
   }
 
   function notifyRewardAmount(uint256 reward)
     external
     override
     updateReward(address(0))
+    isInitialised
   {
-    require(msg.sender == RewardsManager || msg.sender == owner, "Not allowed");
+    require(
+      IRewardsManager(msg.sender) == RewardsManager || msg.sender == owner,
+      "Not allowed"
+    );
     if (block.timestamp >= periodFinish) {
       rewardRate = reward.div(rewardsDuration);
     } else {
@@ -315,6 +345,11 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
       rewards[account] = earned(account);
       userRewardPerTokenPaid[account] = rewardPerTokenStored;
     }
+    _;
+  }
+
+  modifier isInitialised() {
+    require(initialised == true, "must initialise contract");
     _;
   }
 }

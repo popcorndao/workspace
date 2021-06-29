@@ -195,9 +195,9 @@ module.exports = {
     gasPrice: 100,
     enabled: false,
   },
-  contractSizer: {
+  /*contractSizer: {
     alphaSort: true,
     runOnCompile: true,
     disambiguatePaths: false,
-  },
+  },*/
 };

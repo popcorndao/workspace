@@ -3,7 +3,7 @@ import { waffle, ethers } from "hardhat";
 import { parseEther } from "ethers/lib/utils";
 import IUniswapV2Factory from "../artifacts/@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol/IUniswapV2Factory.json";
 import IUniswapV2Router02 from "../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json";
-import { MockERC20, RewardsManager, Staking } from "../typechain";
+import { MockERC20, RewardsEscrow, RewardsManager, Staking } from "../typechain";
 import { Contract } from "@ethersproject/contracts";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { MockContract } from "@ethereum-waffle/mock-contract";
@@ -58,8 +58,14 @@ async function deployContracts(): Promise<Contracts> {
     insuranceFactory.interface.format() as any[]
   );
 
+  const rewardsEscrow = (await (
+    await (
+      await ethers.getContractFactory("RewardsEscrow")
+    ).deploy(POP.address)
+  ).deployed()) as RewardsEscrow;
+
   const Staking = await (
-    await (await ethers.getContractFactory("Staking")).deploy(POP.address)
+    await (await ethers.getContractFactory("Staking")).deploy(POP.address, rewardsEscrow.address)
   ).deployed();
 
   const beneficiaryVaultsFactory = await ethers.getContractFactory(
@@ -92,7 +98,7 @@ async function deployContracts(): Promise<Contracts> {
     mockUniswapV2Router.address
   );
   await RewardsManager.deployed();
-  await Staking.setRewardsManager(RewardsManager.address);
+  await Staking.init(RewardsManager.address);
   return {
     POP,
     MockAlt,
