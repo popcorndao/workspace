@@ -7,18 +7,25 @@ let owner: SignerWithAddress,
   unauthed: SignerWithAddress,
   beneficiary: SignerWithAddress;
 let registry: BeneficiaryRegistry;
+const DEFAULT_REGION = "0x5757";
 
 describe("BeneficiaryRegistry", function () {
   beforeEach(async function () {
     [owner, unauthed, beneficiary] = await ethers.getSigners();
+    const region = await (
+      await (await ethers.getContractFactory("Region")).deploy()
+    ).deployed();
     registry = await (
-      await (await ethers.getContractFactory("BeneficiaryRegistry")).deploy()
+      await (
+        await ethers.getContractFactory("BeneficiaryRegistry")
+      ).deploy(region.address)
     ).deployed();
   });
 
   it("Should add a beneficiary to the registry", async function () {
     await registry.addBeneficiary(
       beneficiary.address,
+      DEFAULT_REGION,
       ethers.utils.formatBytes32String("testCid")
     );
     expect(await registry.beneficiaryExists(beneficiary.address)).to.equal(
@@ -32,11 +39,10 @@ describe("BeneficiaryRegistry", function () {
         .connect(unauthed)
         .addBeneficiary(
           beneficiary.address,
+          DEFAULT_REGION,
           ethers.utils.formatBytes32String("testCid")
         )
-    ).to.be.revertedWith(
-      "Ownable: caller is not the owner"
-    );
+    ).to.be.revertedWith("Ownable: caller is not the owner");
   });
 
   it("Should not allow an unauthorized address to revoke a beneficiary", async function () {
@@ -48,6 +54,7 @@ describe("BeneficiaryRegistry", function () {
   it("Should revoke beneficiaries", async function () {
     await registry.addBeneficiary(
       beneficiary.address,
+      DEFAULT_REGION,
       ethers.utils.formatBytes32String("testCid")
     );
     await registry.connect(owner).revokeBeneficiary(beneficiary.address);
@@ -59,6 +66,7 @@ describe("BeneficiaryRegistry", function () {
   it("Should get a beneficiary by address", async function () {
     await registry.addBeneficiary(
       beneficiary.address,
+      DEFAULT_REGION,
       ethers.utils.formatBytes32String("testCid")
     );
     expect(
@@ -71,6 +79,7 @@ describe("BeneficiaryRegistry", function () {
   it("Should get a beneficiary by address (public)", async function () {
     await registry.addBeneficiary(
       beneficiary.address,
+      DEFAULT_REGION,
       ethers.utils.formatBytes32String("testCid")
     );
     expect(
@@ -83,14 +92,14 @@ describe("BeneficiaryRegistry", function () {
   it("Cannot nominate new ownership as non-owner", async function () {
     await expect(
       registry.connect(unauthed).transferOwnership(unauthed.address)
-    ).to.be.revertedWith(
-      "Ownable: caller is not the owner"
-    );
+    ).to.be.revertedWith("Ownable: caller is not the owner");
   });
 
   it("Cannot nominate new council as non-council", async function () {
     await expect(
-      registry.connect(unauthed).nominateNewCouncil(unauthed.address)
+      registry
+        .connect(unauthed)
+        .nominateNewCouncil(unauthed.address, DEFAULT_REGION)
     ).to.be.revertedWith("Only the contract council may perform this action");
   });
 });

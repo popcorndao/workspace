@@ -5,6 +5,7 @@ pragma solidity >=0.7.0 <=0.8.3;
 import "./Governed.sol";
 import "./CouncilControlled.sol";
 import "./IBeneficiaryRegistry.sol";
+import "./IRegion.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract BeneficiaryRegistry is
@@ -14,6 +15,7 @@ contract BeneficiaryRegistry is
 {
   struct Beneficiary {
     bytes applicationCid; // ipfs address of application
+    bytes2 region;
     uint256 listPointer;
   }
 
@@ -30,46 +32,44 @@ contract BeneficiaryRegistry is
     require(_address == address(_address), "invalid address");
     _;
   }
-  modifier onlyOwnerOrCouncil(address _address) {
-    require(
-      msg.sender == owner() || msg.sender == getCouncil(),
-      "Only the owner or council may perform this action"
-    );
-    _;
-  }
 
-  constructor() Ownable() CouncilControlled(msg.sender) {}
+  constructor(IRegion _region)
+    Ownable()
+    CouncilControlled(msg.sender, _region)
+  {}
 
   /**
    * @notice add a beneficiary with their IPFS cid to the registry
    * TODO: allow only election contract to modify beneficiary
    */
-  function addBeneficiary(address _address, bytes calldata applicationCid)
-    external
-    override
-    onlyOwner
-  {
-    require(_address == address(_address), "invalid address");
+  function addBeneficiary(
+    address account,
+    bytes2 region,
+    bytes calldata applicationCid
+  ) external override onlyOwner {
+    require(account == address(account), "invalid address");
     require(applicationCid.length > 0, "!application");
-    require(!beneficiaryExists(_address), "exists");
+    require(!beneficiaryExists(account), "exists");
 
-    beneficiariesList.push(_address);
-    beneficiariesMap[_address] = Beneficiary({
+    beneficiariesList.push(account);
+    beneficiariesMap[account] = Beneficiary({
       applicationCid: applicationCid,
+      region: region,
       listPointer: beneficiariesList.length - 1
     });
 
-    emit BeneficiaryAdded(_address, applicationCid);
+    emit BeneficiaryAdded(account, applicationCid);
   }
 
   /**
    * @notice remove a beneficiary from the registry. (callable only by council)
    */
-  function revokeBeneficiary(address _address)
-    external
-    override
-    onlyOwnerOrCouncil(msg.sender)
-  {
+  function revokeBeneficiary(address _address) external override {
+    require(
+      msg.sender == owner() ||
+        msg.sender == getCouncil(beneficiariesMap[_address].region),
+      "Only the owner or council may perform this action"
+    );
     require(beneficiaryExists(_address), "exists");
     delete beneficiariesList[beneficiariesMap[_address].listPointer];
     delete beneficiariesMap[_address];

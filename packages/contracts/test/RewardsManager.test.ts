@@ -3,7 +3,7 @@ import { waffle, ethers } from "hardhat";
 import { parseEther } from "ethers/lib/utils";
 import IUniswapV2Factory from "../artifacts/@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol/IUniswapV2Factory.json";
 import IUniswapV2Router02 from "../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json";
-import { MockERC20, RewardsManager, Staking } from "../typechain";
+import { BeneficiaryVaults, MockERC20, RewardsManager, Staking } from "../typechain";
 import { Contract } from "@ethersproject/contracts";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { MockContract } from "@ethereum-waffle/mock-contract";
@@ -13,7 +13,7 @@ interface Contracts {
   MockAlt: MockERC20;
   Insurance: MockContract;
   Treasury: MockContract;
-  BeneficiaryVaults: MockContract;
+  BeneficiaryVaults: BeneficiaryVaults;
   Staking: Staking;
   mockUniswapV2Router: MockContract;
   RewardsManager: RewardsManager;
@@ -62,13 +62,28 @@ async function deployContracts(): Promise<Contracts> {
     await (await ethers.getContractFactory("Staking")).deploy(POP.address)
   ).deployed();
 
+  const mockBeneficiaryRegistryFactory = await ethers.getContractFactory(
+    "BeneficiaryRegistry"
+  );
+  const mockBeneficiaryRegistry = await waffle.deployMockContract(
+    owner,
+    mockBeneficiaryRegistryFactory.interface.format() as any[]
+  );
+
+  const region = await (
+    await (await ethers.getContractFactory("Region")).deploy()
+  ).deployed();
+
   const beneficiaryVaultsFactory = await ethers.getContractFactory(
     "BeneficiaryVaults"
   );
-  const BeneficiaryVaults = await waffle.deployMockContract(
-    owner,
-    beneficiaryVaultsFactory.interface.format() as any[]
-  );
+  const BeneficiaryVaults = await (
+    await beneficiaryVaultsFactory.deploy(
+      POP.address,
+      mockBeneficiaryRegistry.address,
+      region.address
+    )
+  ).deployed();
 
   const mockUniswapV2Factory = await waffle.deployMockContract(
     owner,

@@ -4,6 +4,7 @@ import {
   BeneficiaryVaults,
   IUniswapV2Pair,
   MockERC20,
+  Region,
   RewardsManager,
   Staking,
   UniswapV2Router02,
@@ -27,11 +28,13 @@ let owner: SignerWithAddress,
   nonOwner: SignerWithAddress;
 let contracts: Contracts;
 const provider = waffle.provider;
+const DEFAULT_REGION = "0x5757"
 
 interface Contracts {
   POP: MockERC20;
   TestERC20: MockERC20;
   WETH: WETH9;
+  Region:Region;
   Insurance: Contract;
   Treasury: Contract;
   BeneficiaryVaults: BeneficiaryVaults;
@@ -60,6 +63,8 @@ async function deployContracts(): Promise<Contracts> {
     await (await ethers.getContractFactory("WETH9")).deploy()
   ).deployed()) as WETH9;
 
+  const Region = await (await (await ethers.getContractFactory("Region")).deploy()).deployed()
+
   const Insurance = await (
     await (await ethers.getContractFactory("MockInsurance")).deploy()
   ).deployed();
@@ -69,13 +74,13 @@ async function deployContracts(): Promise<Contracts> {
   ).deployed();
 
   const BeneficiaryRegistry = (await (
-    await (await ethers.getContractFactory("BeneficiaryRegistry")).deploy()
+    await (await ethers.getContractFactory("BeneficiaryRegistry")).deploy(Region.address)
   ).deployed()) as BeneficiaryRegistry;
 
   const BeneficiaryVaults = (await (
     await (
       await ethers.getContractFactory("BeneficiaryVaults")
-    ).deploy(POP.address, BeneficiaryRegistry.address)
+    ).deploy(POP.address, BeneficiaryRegistry.address, Region.address)
   ).deployed()) as BeneficiaryVaults;
 
   const Staking = (await (
@@ -131,6 +136,7 @@ async function deployContracts(): Promise<Contracts> {
     POP,
     TestERC20,
     WETH,
+    Region,
     Insurance,
     Treasury,
     BeneficiaryVaults,
@@ -363,7 +369,7 @@ describe("Integration", function () {
       const newBeneficiaryVaults = await (
         await (
           await ethers.getContractFactory("BeneficiaryVaults")
-        ).deploy(contracts.POP.address, contracts.BeneficiaryRegistry.address)
+        ).deploy(contracts.POP.address, contracts.BeneficiaryRegistry.address, contracts.Region.address)
       ).deployed();
 
       await contracts.RewardsManager.distributeRewards();

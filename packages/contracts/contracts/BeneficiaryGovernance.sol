@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./Governed.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
+import "./IRegion.sol";
 
 /**
  * @notice This contract is for submitting beneficiary nomination proposals and beneficiary takedown proposals
@@ -17,15 +18,19 @@ contract BeneficiaryGovernance is Governed {
   using SafeERC20 for IERC20;
 
   IERC20 public immutable POP;
-  IStaking staking;
-  IBeneficiaryRegistry beneficiaryRegistry;
+  IRegion internal region;
+  IStaking internal staking;
+  IBeneficiaryRegistry internal beneficiaryRegistry;
 
   mapping(address => bool) pendingBeneficiaries;
   /**
    * BNP for Beneficiary Nomination Proposal
    * BTP for Beneficiary Takedown Proposal
    */
-  enum ProposalType {BeneficiaryNominationProposal, BeneficiaryTakedownProposal}
+  enum ProposalType {
+    BeneficiaryNominationProposal,
+    BeneficiaryTakedownProposal
+  }
 
   enum ProposalStatus {
     New,
@@ -35,7 +40,10 @@ contract BeneficiaryGovernance is Governed {
     Failed
   }
 
-  enum VoteOption {Yes, No}
+  enum VoteOption {
+    Yes,
+    No
+  }
 
   struct ConfigurationOptions {
     uint256 votingPeriod;
@@ -50,6 +58,7 @@ contract BeneficiaryGovernance is Governed {
     bytes applicationCid;
     address proposer;
     uint256 startTime;
+    bytes2 region;
     uint256 yesCount;
     uint256 noCount;
     uint256 voterCount;
@@ -100,11 +109,13 @@ contract BeneficiaryGovernance is Governed {
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
     IERC20 _pop,
+    IRegion _region,
     address governance
   ) Governed(governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
     POP = _pop;
+    region = _region;
     _setDefaults();
   }
 
@@ -132,7 +143,8 @@ contract BeneficiaryGovernance is Governed {
    */
   function createProposal(
     address _beneficiary,
-    bytes memory _applicationCid,
+    bytes2 _region,
+    bytes calldata _applicationCid,
     ProposalType _type
   )
     external
@@ -140,6 +152,7 @@ contract BeneficiaryGovernance is Governed {
     enoughBond(msg.sender)
     returns (uint256)
   {
+    //require(region.regionExists(_region), "region doesnt exist");
     _assertProposalPreconditions(_type, _beneficiary);
 
     POP.safeTransferFrom(
@@ -159,6 +172,7 @@ contract BeneficiaryGovernance is Governed {
     proposal.applicationCid = _applicationCid;
     proposal.proposer = msg.sender;
     proposal.startTime = block.timestamp;
+    proposal.region = _region;
     proposal.proposalType = _type;
     proposal.configurationOptions = DefaultConfigurations;
 
@@ -281,6 +295,7 @@ contract BeneficiaryGovernance is Governed {
     if (proposal.proposalType == ProposalType.BeneficiaryNominationProposal) {
       beneficiaryRegistry.addBeneficiary(
         proposal.beneficiary,
+        proposal.region,
         proposal.applicationCid
       );
     }
