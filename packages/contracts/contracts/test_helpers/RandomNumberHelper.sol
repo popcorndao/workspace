@@ -1,12 +1,11 @@
-// SPDX-License-Identifier: MIT
-
 pragma solidity ^0.7.0;
 
 import "@chainlink/contracts/src/v0.7/dev/VRFConsumerBase.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./IRandomNumberConsumer.sol";
 
-contract RandomNumberConsumer is VRFConsumerBase {
+import "../IRandomNumberConsumer.sol";
+
+contract RandomNumberHelper is IRandomNumberConsumer, VRFConsumerBase {
   using SafeMath for uint256;
 
   address public VRFCoordinator;
@@ -16,8 +15,7 @@ contract RandomNumberConsumer is VRFConsumerBase {
   bytes32 internal keyHash;
   uint256 internal fee;
 
-  uint256[] public randomResult;
-  mapping(bytes32 => uint256) requestToElection;
+  uint256 public randomResult;
 
   /**
    * Constructor inherits VRFConsumerBase
@@ -36,17 +34,10 @@ contract RandomNumberConsumer is VRFConsumerBase {
     fee = 0.1 * 10**18; // 0.1 LINK
   }
 
-  function getRandomResult(uint256 electionId) public view returns (uint256) {
-    return randomResult[electionId];
-  }
-
   /**
    * Requests randomness from a user-provided seed
    */
-  function getRandomNumber(uint256 electionId) public {
-    require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK");
-    requestToElection[requestRandomness(keyHash, fee)] = electionId;
-  }
+  function getRandomNumber(uint256 electionId) public override {}
 
   /**
    * Callback function used by VRF Coordinator
@@ -56,9 +47,19 @@ contract RandomNumberConsumer is VRFConsumerBase {
     override
   {
     //randomResult should not be 0
-    randomness = randomness.add(1);
-    randomResult[requestToElection[requestId]] = randomness;
+    randomResult = randomness.add(1);
   }
 
-  function deposit() public payable {}
+  function mockFulfillRandomness(uint256 randomness) external {
+    fulfillRandomness("", randomness);
+  }
+
+  function getRandomResult(uint256 electionId)
+    public
+    view
+    override
+    returns (uint256)
+  {
+    return randomResult;
+  }
 }
