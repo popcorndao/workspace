@@ -201,6 +201,19 @@ describe("Pool", function () {
         await contracts.mockYearnVault.balanceOf(contracts.pool.address)
       ).to.equal(parseEther("1000"));
     });
+
+    it("depositFor deposits and sends shares to address", async function () {
+      let amount = parseEther("1000");
+      await contracts.mockToken
+        .connect(depositor)
+        .approve(contracts.pool.address, amount);
+      await contracts.pool
+        .connect(depositor)
+        .depositFor(amount, depositor2.address);
+      expect(
+        await contracts.pool.connect(depositor2).balanceOf(depositor2.address)
+      ).to.equal(amount);
+    });
   });
 
   describe("calculating total assets", async function () {
