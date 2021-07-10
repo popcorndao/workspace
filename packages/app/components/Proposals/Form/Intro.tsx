@@ -1,4 +1,4 @@
-import { defaultFormData, FormStepProps } from './ProposalForm';
+import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
 
 export default function Intro({
   form,

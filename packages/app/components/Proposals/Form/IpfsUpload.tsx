@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import toast from 'react-hot-toast';
 import { DisplayImages, DisplayPDFs } from './DisplayFiles';
 import * as Icon from 'react-feather';
-import { Navigation } from './ProposalForm';
+import { Navigation } from 'pages/proposals/propose';
 
 const FIVE_MB = 5 * 1000 * 1024;
 

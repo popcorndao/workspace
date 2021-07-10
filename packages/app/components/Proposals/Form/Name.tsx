@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormStepProps } from './ProposalForm';
+import { FormStepProps } from 'pages/proposals/propose';
 import ControlledTextInput from './ControlledTextInput';
 
 export default function Name({

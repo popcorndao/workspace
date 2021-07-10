@@ -1,7 +1,6 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/solid';
 import ProgressBar from 'components/ProgressBar';
-import { Navigation } from './ProposalForm';
-
+import { Navigation } from 'pages/proposals/propose';
 interface NavigationButtonProps {
   navigation: Navigation;
 }

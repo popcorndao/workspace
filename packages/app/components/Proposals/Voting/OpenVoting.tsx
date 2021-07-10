@@ -1,12 +1,12 @@
 import { RadioGroup } from '@headlessui/react';
+import { VoteOptions } from '@popcorn/contracts/lib/BeneficiaryGovernance/constants';
 import { Proposal, ProposalType } from '@popcorn/utils';
+import { useWeb3React } from '@web3-react/core';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
 import { useContext, useState } from 'react';
 import CountdownTimer from './CountdownTimer';
-import { useWeb3React } from '@web3-react/core';
-import { VoteOptions } from "@popcorn/contracts/lib/BeneficiaryGovernance/constants";
 
 export default function OpenVoting(proposal: Proposal): JSX.Element {
   const { dispatch } = useContext(store);
@@ -15,9 +15,11 @@ export default function OpenVoting(proposal: Proposal): JSX.Element {
   const { library } = useWeb3React();
 
   const vote = () => {
-    contracts.beneficiaryGovernance.connect(library.getSigner()).vote(proposal.id, selected);
+    contracts.beneficiaryGovernance
+      .connect(library.getSigner())
+      .vote(proposal.id, selected);
     dispatch(setDualActionModal(false));
-  }
+  };
 
   return (
     <div>

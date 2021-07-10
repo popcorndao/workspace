@@ -1,6 +1,6 @@
 import React from 'react';
 import IpfsUpload from './IpfsUpload';
-import { FormStepProps } from './ProposalForm';
+import { FormStepProps } from 'pages/proposals/propose';
 
 export default function HeaderImage({
   form,

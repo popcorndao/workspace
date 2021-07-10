@@ -1,5 +1,6 @@
 import { CheckIcon, ExclamationCircleIcon } from '@heroicons/react/outline';
-import { Navigation } from './ProposalForm';
+import { Navigation } from 'pages/proposals/propose';
+
 
 interface ControlledTextInputProps {
   inputValue: string;

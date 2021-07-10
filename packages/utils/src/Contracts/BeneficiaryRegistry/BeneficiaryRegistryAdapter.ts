@@ -1,5 +1,5 @@
 import { BeneficiaryRegistry } from '@popcorn/contracts/typechain';
-import { BeneficiaryApplication } from '@popcorn/utils';
+import { BeneficiaryApplication } from '../../';
 import { IIpfsClient } from '../../IpfsClient/IpfsClient';
 
 export const BeneficiaryRegistryAdapter = (

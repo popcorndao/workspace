@@ -26,7 +26,10 @@ contract BeneficiaryGovernance is Governed {
    * BNP for Beneficiary Nomination Proposal
    * BTP for Beneficiary Takedown Proposal
    */
-  enum ProposalType {BeneficiaryNominationProposal, BeneficiaryTakedownProposal}
+  enum ProposalType {
+    BeneficiaryNominationProposal,
+    BeneficiaryTakedownProposal
+  }
 
   enum ProposalStatus {
     New,
@@ -36,7 +39,10 @@ contract BeneficiaryGovernance is Governed {
     Failed
   }
 
-  enum VoteOption {Yes, No}
+  enum VoteOption {
+    Yes,
+    No
+  }
 
   struct ConfigurationOptions {
     uint256 votingPeriod;
@@ -143,11 +149,13 @@ contract BeneficiaryGovernance is Governed {
   {
     _assertProposalPreconditions(_type, _beneficiary);
 
-    POP.safeTransferFrom(
-      msg.sender,
-      address(this),
-      DefaultConfigurations.proposalBond
-    );
+    if (DefaultConfigurations.proposalBond > 0) {
+      POP.safeTransferFrom(
+        msg.sender,
+        address(this),
+        DefaultConfigurations.proposalBond
+      );
+    }
 
     uint256 proposalId = proposals.length;
 

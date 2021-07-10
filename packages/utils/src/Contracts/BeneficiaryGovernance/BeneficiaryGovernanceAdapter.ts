@@ -1,6 +1,6 @@
-import { IIpfsClient } from '../../IpfsClient/IpfsClient';
 import { BeneficiaryGovernance } from '@popcorn/contracts/typechain';
-import { BeneficiaryApplication, Proposal, ProposalType } from '@popcorn/utils';
+import { BeneficiaryApplication, Proposal, ProposalType } from '../../';
+import { IIpfsClient } from '../../IpfsClient/IpfsClient';
 
 // given a function type, return either the type of the resolved promise if
 // a promise is returned or the straight return type of the function.

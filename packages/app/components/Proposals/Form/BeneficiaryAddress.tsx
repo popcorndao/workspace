@@ -1,5 +1,5 @@
 import web3 from 'web3';
-import { FormStepProps } from './ProposalForm';
+import { FormStepProps } from 'pages/proposals/propose';
 import ControlledTextInput from './ControlledTextInput';
 
 export default function BeneficiaryAddress({

@@ -1,6 +1,6 @@
 import React from 'react';
 import IpfsUpload from './IpfsUpload';
-import { FormStepProps } from './ProposalForm';
+import { FormStepProps } from 'pages/proposals/propose';
 
 export default function AdditionalImages({
   form,
@@ -9,7 +9,10 @@ export default function AdditionalImages({
 }: FormStepProps): JSX.Element {
   const [formData, setFormData] = form;
   function updateAdditionalImages(additionalImages) {
-    setFormData({ ...formData, files: { ...formData.files, additionalImages } });
+    setFormData({
+      ...formData,
+      files: { ...formData.files, additionalImages },
+    });
   }
   return (
     visible && (

@@ -1,6 +1,6 @@
 import { CheckIcon, XIcon } from '@heroicons/react/solid';
 import { DocumentReportIcon } from '@heroicons/react/outline';
-import { Navigation } from './ProposalForm';
+import { Navigation } from 'pages/proposals/propose';
 
 interface DisplayFilesProps {
   localState: string | string[];

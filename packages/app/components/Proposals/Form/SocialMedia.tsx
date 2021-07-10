@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckIcon } from '@heroicons/react/solid';
 import SocialMediaTable from './SocialMediaTable';
-import { FormStepProps } from './ProposalForm';
+import { FormStepProps } from 'pages/proposals/propose';
 
 export default function SocialMedia({
   form,
