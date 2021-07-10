@@ -10,12 +10,12 @@ import { BigNumber } from 'ethers';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
 import {
   BeneficiaryApplication,
   IpfsClient,
   formatAndRoundBigNumber,
 } from '@popcorn/utils';
-import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');

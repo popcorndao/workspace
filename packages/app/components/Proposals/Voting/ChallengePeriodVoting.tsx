@@ -13,11 +13,11 @@ export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
   const { library } = useWeb3React();
 
   const closeModal = () => dispatch(setDualActionModal(false));
-  const voteNo = () => {
+  const voteNo = async () => {
     contracts.beneficiaryGovernance
       .connect(library.getSigner())
       .vote(proposal.id, VoteOptions.Nay);
-      closeModal();
+    closeModal();
   };
 
   return (
