@@ -5,11 +5,14 @@ pragma solidity >=0.7.0 <0.8.0;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import 'hardhat/console.sol';
+
 interface CurveDepositZap {
   function add_liquidity(
     address pool,
     uint256[4] calldata amounts,
-    uint256 min_mint_amounts
+    uint256 min_mint_amounts,
+    address receiver
   ) external returns (uint256);
 
   function remove_liquidity_one_coin(
@@ -100,6 +103,8 @@ contract Zapper {
     uint8 index = 9;
     address[8] memory supportedTokens = supportedTokens(popcornPool);
     for (uint8 i = 0; i < supportedTokens.length; i++) {
+      console.log("want token: ", address(token));
+      console.log("supported token: ", address(supportedTokens[i]));
       if (address(supportedTokens[i]) == address(token)) {
         index = i;
         break;
@@ -130,7 +135,8 @@ contract Zapper {
     uint256 lpTokens = curveDepositZap.add_liquidity(
       curvePoolAddress(popcornPool),
       amounts,
-      0
+      0,
+      address(this)
     );
     IERC20(token(popcornPool)).safeIncreaseAllowance(popcornPool, lpTokens);
     uint256 shares = IPool(popcornPool).depositFor(lpTokens, msg.sender);
