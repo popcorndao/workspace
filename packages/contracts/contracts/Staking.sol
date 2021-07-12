@@ -47,7 +47,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
 
   /* ========== CONSTRUCTOR ========== */
 
-  constructor(IERC20 _pop) Owned(msg.sender) {
+  constructor(IERC20 _pop) public Owned(msg.sender) {
     POP = _pop;
   }
 

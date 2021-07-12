@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { waffle, ethers } from "hardhat";
 import { parseEther } from "ethers/lib/utils";
-import { DefendedHelper, MockERC20, Staking } from "../typechain";
+import { StakingDefendedHelper, MockERC20, Staking } from "../typechain";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber } from "@ethersproject/bignumber";
 
@@ -14,7 +14,7 @@ let owner: SignerWithAddress,
 let mockERC20Factory;
 let mockPop: MockERC20;
 let staking: Staking;
-let defendedHelper: DefendedHelper;
+let defendedHelper: StakingDefendedHelper;
 
 describe("Staking", function () {
   beforeEach(async function () {
@@ -42,12 +42,11 @@ describe("Staking", function () {
       Pool.interface.format() as any
     );
 
-    const DefendedHelper = await ethers.getContractFactory("DefendedHelper");
+    const StakingDefendedHelper = await ethers.getContractFactory("StakingDefendedHelper");
     defendedHelper = await (
-      await DefendedHelper.deploy(
+      await StakingDefendedHelper.deploy(
         mockPop.address,
-        staking.address,
-        mockPool.address
+        staking.address
       )
     ).deployed();
     await mockPop.mint(defendedHelper.address, parseEther("1000"))

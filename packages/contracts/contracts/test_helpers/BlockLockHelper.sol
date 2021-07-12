@@ -1,11 +1,11 @@
-pragma solidity >=0.6.0 <0.8.0;
+pragma solidity >=0.7.0 <0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface PopcornPool is IERC20 {
   function deposit(uint256 amount) external returns (uint256);
 
-  function withdraw(uint256 amount) external returns (uint256, uint256);
+  function withdraw(uint256 amount) external returns (uint256);
 }
 
 contract BlockLockHelper {
