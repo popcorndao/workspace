@@ -77,7 +77,7 @@ contract AffiliateToken is ERC20, BaseWrapper {
     }
   }
 
-  function pricePerShare() public view returns (uint256) {
+  function pricePerShare() external view returns (uint256) {
     return
       totalVaultBalance(address(this)).mul(10**uint256(decimals())).div(
         totalSupply()
@@ -86,28 +86,31 @@ contract AffiliateToken is ERC20, BaseWrapper {
 
   function _sharesForValue(uint256 amount) internal view returns (uint256) {
     // total wrapper assets before deposit (assumes deposit already occured)
-    uint256 totalWrapperAssets;
     uint256 totalBalance = totalVaultBalance(address(this));
     if (totalBalance > amount) {
-      uint256 totalWrapperAssets = totalVaultBalance(address(this)).sub(amount);
-    }
-
-    if (totalWrapperAssets > 0) {
-      return totalSupply().mul(amount).div(totalWrapperAssets);
+      return totalSupply().mul(amount).div(totalBalance.sub(amount));
     } else {
       return amount;
     }
   }
 
+  function deposit() external returns (uint256) {
+    return deposit(uint256(-1)); // Deposit everything
+  }
+
   function deposit(uint256 amount) public virtual returns (uint256 deposited) {
     deposited = _deposit(msg.sender, address(this), amount, true); // `true` = pull from `msg.sender`
-    uint256 shares = _sharesForValue(amount); // NOTE: Must be calculated after deposit is handled
+    uint256 shares = _sharesForValue(deposited); // NOTE: Must be calculated after deposit is handled
     _mint(msg.sender, shares);
   }
 
-  function withdraw(uint256 shares) public virtual returns (uint256) {
+  function withdraw() external returns (uint256) {
+    return withdraw(balanceOf(msg.sender));
+  }
+
+  function withdraw(uint256 shares) public virtual returns (uint256 withdrawn) {
+    withdrawn = _withdraw(address(this), msg.sender, _shareValue(shares), true); // `true` = withdraw from `bestVault`
     _burn(msg.sender, shares);
-    return _withdraw(address(this), msg.sender, _shareValue(shares), true); // `true` = withdraw from `bestVault`
   }
 
   function migrate() external onlyAffiliate returns (uint256) {
