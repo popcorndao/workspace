@@ -5,8 +5,6 @@ pragma solidity >=0.7.0 <0.8.0;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import 'hardhat/console.sol';
-
 interface CurveDepositZap {
   function add_liquidity(
     address pool,
@@ -103,8 +101,6 @@ contract Zapper {
     uint8 index = 9;
     address[8] memory supportedTokens = supportedTokens(popcornPool);
     for (uint8 i = 0; i < supportedTokens.length; i++) {
-      console.log("want token: ", address(token));
-      console.log("supported token: ", address(supportedTokens[i]));
       if (address(supportedTokens[i]) == address(token)) {
         index = i;
         break;
