@@ -18,9 +18,11 @@ export default function AdditionalImages({
       ...formData,
       files: {
         ...formData.files,
-        additionalImages: additionalImages.map((image) => {
-          return { image: image, description: '' };
-        }),
+        additionalImages: formData.files.additionalImages.concat(
+          additionalImages.map((image) => {
+            return { image: image, description: '' };
+          }),
+        ),
       },
     });
   }
@@ -57,9 +59,8 @@ export default function AdditionalImages({
           )}
           setLocalState={updateAdditionalImages}
           fileDescription={'Additional Images'}
-          fileInstructions={
-            'The ideal image size and aspect ratio are 1200px X 675px and 16:9, respectively.'
-          }
+          fileInstructions={`The ideal image size and aspect ratio are 1200px
+          X 675px and 16:9, respectively.`}
           fileType={'image/*'}
           numMaxFiles={4}
           maxFileSizeMB={5}
