@@ -24,6 +24,9 @@ interface Contracts {
 const DepositorInitial = parseEther("100000");
 let owner: SignerWithAddress,
   depositor: SignerWithAddress,
+  depositor1: SignerWithAddress,
+  depositor2: SignerWithAddress,
+  depositor3: SignerWithAddress,
   rewardsManager: SignerWithAddress
 let contracts: Contracts;
 
@@ -42,7 +45,9 @@ async function deployContracts(): Promise<Contracts> {
   const Faucet = await ethers.getContractFactory("Faucet");
   const faucet = await (
     await Faucet.deploy(
-      UNISWAP_ROUTER_ADDRESS
+      UNISWAP_ROUTER_ADDRESS,
+      CURVE_ADDRESS_PROVIDER_ADDRESS,
+      CURVE_METAPOOL_DEPOSIT_ZAP_ADDRESS
     )
   ).deployed();
   await network.provider.send("hardhat_setBalance", [
@@ -104,13 +109,18 @@ describe("Pool", function () {
     [
       owner,
       depositor,
+      depositor1,
+      depositor2,
+      depositor3,
       rewardsManager
     ] = await ethers.getSigners();
     contracts = await deployContracts();
-    await contracts.faucet.sendTokens(DAI_TOKEN_ADDRESS, depositor.address);
-    await contracts.faucet.sendTokens(USDC_TOKEN_ADDRESS, depositor.address);
-    await contracts.faucet.sendTokens(USDT_TOKEN_ADDRESS, depositor.address);
-    await contracts.faucet.sendTokens(FRAX_TOKEN_ADDRESS, depositor.address);
+    [depositor, depositor1, depositor2, depositor3].forEach(async (account) => {
+      await contracts.faucet.sendTokens(DAI_TOKEN_ADDRESS, 10, account.address);
+      await contracts.faucet.sendTokens(USDC_TOKEN_ADDRESS, 10, account.address);
+      await contracts.faucet.sendTokens(USDT_TOKEN_ADDRESS, 10, account.address);
+      await contracts.faucet.sendTokens(FRAX_TOKEN_ADDRESS, 10, account.address);
+    });
   });
 
   describe("Zapping in", function () {
@@ -150,7 +160,7 @@ describe("Pool", function () {
       await contracts.zapper.connect(depositor).zapOut(contracts.pool.address, DAI_TOKEN_ADDRESS, balance);
 
       expect(await contracts.pool.balanceOf(depositor.address)).to.equal(0);
-      expect((await contracts.dai.balanceOf(depositor.address)).sub(initialDaiBalance)).to.equal(parseEther("9941.407167437873103796"));
+      expect((await contracts.dai.balanceOf(depositor.address)).sub(initialDaiBalance)).to.equal(parseEther("9941.407142235427790758"));
     });
 
     it("Depositor can zap out to USDC", async function () {
@@ -163,7 +173,7 @@ describe("Pool", function () {
       await contracts.zapper.connect(depositor).zapOut(contracts.pool.address, USDC_TOKEN_ADDRESS, balance);
 
       expect(await contracts.pool.balanceOf(depositor.address)).to.equal(0);
-      expect((await contracts.usdc.balanceOf(depositor.address)).sub(initialUsdcBalance)).to.equal(parseUnits("9950.383039", 6));
+      expect((await contracts.usdc.balanceOf(depositor.address)).sub(initialUsdcBalance)).to.equal(parseUnits("9950.383014", 6));
     });
 
     it("Depositor can zap out to USDT", async function () {
@@ -176,7 +186,7 @@ describe("Pool", function () {
       await contracts.zapper.connect(depositor).zapOut(contracts.pool.address, USDT_TOKEN_ADDRESS, balance);
 
       expect(await contracts.pool.balanceOf(depositor.address)).to.equal(0);
-      expect((await contracts.usdt.balanceOf(depositor.address)).sub(initialUsdtBalance)).to.equal(parseUnits("9951.193322", 6));
+      expect((await contracts.usdt.balanceOf(depositor.address)).sub(initialUsdtBalance)).to.equal(parseUnits("9951.193297", 6));
     });
 
     it("Depositor can zap out to FRAX", async function () {
@@ -189,7 +199,37 @@ describe("Pool", function () {
       await contracts.zapper.connect(depositor).zapOut(contracts.pool.address, FRAX_TOKEN_ADDRESS, balance);
 
       expect(await contracts.pool.balanceOf(depositor.address)).to.equal(0);
-      expect((await contracts.frax.balanceOf(depositor.address)).sub(initialFraxBalance)).to.equal(parseEther("9929.450602517036174524"));
+      expect((await contracts.frax.balanceOf(depositor.address)).sub(initialFraxBalance)).to.equal(parseEther("9929.450577344820125379"));
+    });
+  });
+
+  describe("Deposits", function () {
+    it("Multiple deposits", async function () {
+      await contracts.dai.connect(depositor).approve(contracts.zapper.address, parseEther("10000"));
+      await contracts.zapper.connect(depositor).zapIn(contracts.pool.address, DAI_TOKEN_ADDRESS, parseEther("10000"));
+
+      await contracts.usdc.connect(depositor1).approve(contracts.zapper.address, parseUnits("25000", 6));
+      await contracts.zapper.connect(depositor1).zapIn(contracts.pool.address, USDC_TOKEN_ADDRESS, parseUnits("25000", 6));
+
+      await contracts.usdt.connect(depositor2).approve(contracts.zapper.address, parseUnits("150000", 6));
+      await contracts.zapper.connect(depositor2).zapIn(contracts.pool.address, USDT_TOKEN_ADDRESS, parseUnits("150000", 6));
+
+      await contracts.frax.connect(depositor3).approve(contracts.zapper.address, parseUnits("15000"));
+      await contracts.zapper.connect(depositor3).zapIn(contracts.pool.address, FRAX_TOKEN_ADDRESS, parseEther("15000"));
+
+      expect(await contracts.pool.balanceOf(depositor.address)).to.equal(parseEther("9942.518429334402447895"));
+      expect(await contracts.pool.balanceOf(depositor1.address)).to.equal(parseEther("24837.370725848887812075"));
+      expect(await contracts.pool.balanceOf(depositor2.address)).to.equal(parseEther("149016.123624648447740383"));
+      expect(await contracts.pool.balanceOf(depositor3.address)).to.equal(parseEther("14938.232552405515813615"));
+
+      expect(await contracts.pool.totalAssets()).to.equal(parseEther("60654500.944694042012671843"));
+      expect(await contracts.pool.pricePerPoolToken()).to.equal(parseEther("0.999999993662252304"));
+
+      let [vault] = await contracts.pool.allVaults();
+      await contracts.faucet.sendCurveLPTokens(FRAX_LP_TOKEN_ADDRESS, 100, vault);
+      expect(await contracts.pool.totalAssets()).to.equal(parseEther("60857153.177374046977874240"));
+
+      expect(await contracts.pool.pricePerPoolToken()).to.equal(parseEther("1.003341085060900996"));
     });
   });
 });
