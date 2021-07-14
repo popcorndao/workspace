@@ -1,8 +1,8 @@
+import { BeneficiaryApplication } from '@popcorn/utils';
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
-import { ContractsContext } from '../../context/Web3/contracts';
 import { useContext, useEffect, useState } from 'react';
 import { Check } from 'react-feather';
-import { BeneficiaryApplication } from '@popcorn/utils';
+import { ContractsContext } from '../../context/Web3/contracts';
 
 interface GrantFundedProps {
   beneficiary: BeneficiaryApplication;
@@ -11,24 +11,20 @@ interface GrantFundedProps {
 }
 
 export default function GrantFunded({
-  election,
   beneficiary,
+  election,
   totalVotes,
 }: GrantFundedProps): JSX.Element {
   const { contracts } = useContext(ContractsContext);
   const [awarded, setAwarded] = useState(false);
 
   const isBeneficiaryGrantRecipient = async () => {
-    const awarded = (
-      await contracts.grant.getActiveAwardees(election.electionTerm)
-    ).map((a) => a.toLowerCase());
-    if (awarded.includes(beneficiary.beneficiaryAddress)) {
-      setAwarded(true);
-    }
+    //TODO how do check which beneficiary is awarded a grant?
+    setAwarded(true);
   };
 
   useEffect(() => {
-    if (contracts?.grant) {
+    if (contracts) {
       isBeneficiaryGrantRecipient();
     }
   }, [contracts]);

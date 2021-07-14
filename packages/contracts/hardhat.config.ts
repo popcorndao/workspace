@@ -1,16 +1,16 @@
-import "@popcorn/utils/src/envLoader";
-import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
+import "@popcorn/utils/src/envLoader";
 import "@typechain/hardhat";
-import "hardhat-gas-reporter";
-import "hardhat-contract-sizer";
 import { utils } from "ethers";
-
+import "hardhat-contract-sizer";
+import "hardhat-gas-reporter";
+import { task } from "hardhat/config";
+import { DefaultConfiguration } from "./lib/SetToken/Configuration";
+import SetTokenManager from "./lib/SetToken/SetTokenManager";
 import deploy from "./scripts/deployWithValues";
 import deployTestnet from "./scripts/deployWithValuesTestnet";
+import finalizeElection from "./scripts/finalizeElection";
 import { GrantElectionAdapter } from "./scripts/helpers/GrantElectionAdapter";
-import SetTokenManager from "./lib/SetToken/SetTokenManager";
-import { DefaultConfiguration } from "./lib/SetToken/Configuration";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -117,16 +117,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
 
 task("elections:finalize", "finalize a grant election")
   .addParam("term", "election term to end")
-  .setAction(async (args, hre) => {
-    const [signer] = await hre.ethers.getSigners();
-    const { term } = args;
-    const GrantElections = new hre.ethers.Contract(
-      process.env.ADDR_GRANT_ELECTION,
-      require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
-      signer
-    );
-    await GrantElections.finalize(Number(term), { gasLimit: 10000000 });
-  });
+  .setAction(finalizeElection);
 
 task("random", "gets a random number")
   .addParam("seed", "the seed")
@@ -143,14 +134,14 @@ task("random", "gets a random number")
   });
 
 task("send-eth", "send eth to address")
-  .addPositionalParam('address')
-  .setAction(async (args, hre) =>{
+  .addPositionalParam("address")
+  .setAction(async (args, hre) => {
     const [signer] = await hre.ethers.getSigners();
     await signer.sendTransaction({
       to: args.address,
-      value: hre.ethers.utils.parseEther("2.0")
+      value: hre.ethers.utils.parseEther("2.0"),
     });
-  })
+  });
 
 task("hysi:deploy", "deploys set token")
   .addOptionalParam("debug", "display debug information")
@@ -214,9 +205,9 @@ module.exports = {
     gasPrice: 100,
     enabled: false,
   },
-  contractSizer: {
+  /*contractSizer: {
     alphaSort: true,
     runOnCompile: true,
     disambiguatePaths: false,
-  },
+  },*/
 };
