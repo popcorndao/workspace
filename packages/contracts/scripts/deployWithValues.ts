@@ -1,20 +1,20 @@
-import { parseEther } from "ethers/lib/utils";
-import { GrantElectionAdapter } from "./helpers/GrantElectionAdapter";
-import bluebird from "bluebird";
-import { BigNumber, Contract, utils } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { getBytes32FromIpfsHash } from "@popcorn/utils/src/ipfsHashManipulation";
+import bluebird from "bluebird";
+import { BigNumber, Contract, utils } from "ethers";
+import { parseEther } from "ethers/lib/utils";
+import { GrantElectionAdapter } from "./helpers/GrantElectionAdapter";
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
 
 interface Contracts {
-  beneficiaryRegistry: Contract;
-  grantRegistry: Contract;
-  mockPop: Contract;
-  staking: Contract;
-  randomNumberConsumer: Contract;
-  grantElections: Contract;
   beneficiaryGovernance: Contract;
+  beneficiaryRegistry: Contract;
+  beneficiaryVaults: Contract;
+  grantElections: Contract;
+  mockPop: Contract;
+  randomNumberConsumer: Contract;
+  staking: Contract;
 }
 
 export default async function deploy(ethers): Promise<void> {
@@ -36,16 +36,16 @@ export default async function deploy(ethers): Promise<void> {
       await (await ethers.getContractFactory("BeneficiaryRegistry")).deploy()
     ).deployed();
 
-    const grantRegistry = await (
-      await (
-        await ethers.getContractFactory("GrantRegistry")
-      ).deploy(beneficiaryRegistry.address)
-    ).deployed();
-
     const mockPop = await (
       await (
         await ethers.getContractFactory("MockERC20")
       ).deploy("TestPOP", "TPOP", 18)
+    ).deployed();
+
+    const beneficiaryVaults = await (
+      await (
+        await ethers.getContractFactory("BeneficiaryVaults")
+      ).deploy(mockPop.address, beneficiaryRegistry.address)
     ).deployed();
 
     const staking = await (
@@ -68,7 +68,7 @@ export default async function deploy(ethers): Promise<void> {
       ).deploy(
         staking.address,
         beneficiaryRegistry.address,
-        grantRegistry.address,
+        beneficiaryVaults.address,
         randomNumberConsumer.address,
         mockPop.address,
         accounts[0].address
@@ -87,13 +87,13 @@ export default async function deploy(ethers): Promise<void> {
     ).deployed();
 
     contracts = {
-      beneficiaryRegistry,
-      grantRegistry,
-      mockPop,
-      staking,
-      randomNumberConsumer,
-      grantElections,
       beneficiaryGovernance,
+      beneficiaryRegistry,
+      beneficiaryVaults,
+      grantElections,
+      mockPop,
+      randomNumberConsumer,
+      staking,
     };
     logResults();
   };
@@ -102,7 +102,7 @@ export default async function deploy(ethers): Promise<void> {
     console.log("giving ETH to beneficiaries ...");
     await bluebird.map(
       bennies,
-      async (beneficiary: SignerWithAddress) => {
+      async (beneficiary) => {
         const balance = await ethers.provider.getBalance(beneficiary.address);
         if (balance.lt(parseEther(".01"))) {
           return accounts[0].sendTransaction({
@@ -234,7 +234,7 @@ export default async function deploy(ethers): Promise<void> {
     console.log("adding beneficiaries to registry ...");
     await bluebird.map(
       bennies.slice(11),
-      async (beneficiary: SignerWithAddress) => {
+      async (beneficiary) => {
         return contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
           getBytes32FromIpfsHash(
@@ -286,15 +286,18 @@ export default async function deploy(ethers): Promise<void> {
       `initializing ${GrantTermMap[grantTerm]} election with fast voting enabled ...`
     );
     await contracts.grantElections.setConfiguration(
-      grantTerm,
-      10,
-      10,
-      true,
-      false,
-      0,
-      86400 * 30,
-      10,
-      100
+      grantTerm, // term
+      10, // num ranking
+      10, // awardees
+      true, //chainlink vrf?
+      10, // reg period
+      86400 * 30, //voting period
+      100, // cooldown period
+      0, // bond amount
+      false, // bond required?
+      10, // finalisation incentive
+      false, // enabled?
+      0 // share type
     );
 
     await contracts.grantElections.initialize(grantTerm);
@@ -314,8 +317,10 @@ export default async function deploy(ethers): Promise<void> {
     );
     await bluebird.map(
       bennies,
-      async (beneficiary: SignerWithAddress) => {
-        console.log(`registering ${beneficiary.address}`);
+      async (beneficiary) => {
+        console.log(
+          `registering ${beneficiary.address} for ${GrantTermMap[grantTerm]} election`
+        );
         return contracts.grantElections.registerForElection(
           beneficiary.address,
           grantTerm,
@@ -347,7 +352,7 @@ export default async function deploy(ethers): Promise<void> {
 
   const stakePOP = async (): Promise<void> => {
     console.log("voters are staking POP ...");
-    await bluebird.map(accounts, async (voter: SignerWithAddress) => {
+    await bluebird.map(accounts, async (voter) => {
       return contracts.staking
         .connect(voter)
         .stake(utils.parseEther("1000"), 86400 * 365 * 4);
@@ -406,15 +411,18 @@ export default async function deploy(ethers): Promise<void> {
       "initializing quarterly election with fast forwarding to closed state ..."
     );
     await contracts.grantElections.setConfiguration(
-      GrantTerm.Quarter,
-      1, // 1 awardee
-      3, // 3 qualifying
-      true,
-      false,
-      0,
-      120, // secs for voting period
-      1, // secs for registration period
-      100
+      GrantTerm.Quarter, // term
+      10, // num ranking
+      10, // awardees
+      false, //chainlink vrf?
+      10, // reg period
+      10, //voting period
+      100, // cooldown period
+      0, // bond amount
+      false, // bond required?
+      10, // finalisation incentive
+      false, // enabled?
+      0 // share type
     );
     await contracts.grantElections.initialize(GrantTerm.Quarter);
     console.log(
@@ -438,7 +446,7 @@ export default async function deploy(ethers): Promise<void> {
       electionMetadata = await GrantElectionAdapter(
         contracts.grantElections
       ).getElectionMetadata(GrantTerm.Quarter);
-      console.log("waiting for election to be ready for voting...");
+      console.log("waiting for quarterly election to be ready for voting...");
     }
 
     await voteForElection(
@@ -455,14 +463,14 @@ export default async function deploy(ethers): Promise<void> {
       console.log("waiting for votes to confirm ...");
     }
 
-    console.log("refreshing election state");
+    console.log("refreshing quarterly election state");
     while (electionMetadata.electionState != 2) {
       await contracts.grantElections.refreshElectionState(GrantTerm.Quarter);
       electionMetadata = await GrantElectionAdapter(
         contracts.grantElections
       ).getElectionMetadata(GrantTerm.Quarter);
       await new Promise((r) => setTimeout(r, 1000));
-      console.log("waiting for election to close...");
+      console.log("waiting for quarterly election to close...");
     }
 
     await displayElectionMetadata(GrantTerm.Quarter);
@@ -476,7 +484,6 @@ export default async function deploy(ethers): Promise<void> {
     await registerBeneficiariesForElection(GrantTerm.Year, bennies.slice(18));
     await displayElectionMetadata(GrantTerm.Year);
   };
-
 
   const approveForStaking = async (): Promise<void> => {
     console.log("approving all accounts for staking ...");
