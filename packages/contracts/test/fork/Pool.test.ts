@@ -116,10 +116,17 @@ describe("Pool", function () {
     ] = await ethers.getSigners();
     contracts = await deployContracts();
     [depositor, depositor1, depositor2, depositor3].forEach(async (account) => {
-      await contracts.faucet.sendTokens(DAI_TOKEN_ADDRESS, 10, account.address);
-      await contracts.faucet.sendTokens(USDC_TOKEN_ADDRESS, 10, account.address);
-      await contracts.faucet.sendTokens(USDT_TOKEN_ADDRESS, 10, account.address);
-      await contracts.faucet.sendTokens(FRAX_TOKEN_ADDRESS, 10, account.address);
+      await contracts.faucet.sendTokens(DAI_TOKEN_ADDRESS, 100, account.address);
+      await contracts.faucet.sendTokens(USDC_TOKEN_ADDRESS, 100, account.address);
+      await contracts.faucet.sendTokens(USDT_TOKEN_ADDRESS, 100, account.address);
+      await contracts.faucet.sendTokens(FRAX_TOKEN_ADDRESS, 100, account.address);
+    });
+  });
+
+  describe("Configuration", function () {
+    it("Has a token name and symbol", async function () {
+      expect(await contracts.pool.name()).to.equal("Popcorn Curve.fi Factory USD Metapool: Frax Pool");
+      expect(await contracts.pool.symbol()).to.equal("popFRAX3CRV-f");
     });
   });
 
@@ -203,33 +210,65 @@ describe("Pool", function () {
     });
   });
 
-  describe("Deposits", function () {
-    it("Multiple deposits", async function () {
-      await contracts.dai.connect(depositor).approve(contracts.zapper.address, parseEther("10000"));
+  describe("Pool value", function () {
+
+    beforeEach(async function() {
+      await contracts.dai.connect(depositor).approve(contracts.zapper.address, parseEther("1000000"));
       await contracts.zapper.connect(depositor).zapIn(contracts.pool.address, DAI_TOKEN_ADDRESS, parseEther("10000"));
 
-      await contracts.usdc.connect(depositor1).approve(contracts.zapper.address, parseUnits("25000", 6));
+      await contracts.usdc.connect(depositor1).approve(contracts.zapper.address, parseUnits("1000000", 6));
       await contracts.zapper.connect(depositor1).zapIn(contracts.pool.address, USDC_TOKEN_ADDRESS, parseUnits("25000", 6));
 
-      await contracts.usdt.connect(depositor2).approve(contracts.zapper.address, parseUnits("150000", 6));
+      await contracts.usdt.connect(depositor2).approve(contracts.zapper.address, parseUnits("1000000", 6));
       await contracts.zapper.connect(depositor2).zapIn(contracts.pool.address, USDT_TOKEN_ADDRESS, parseUnits("150000", 6));
 
-      await contracts.frax.connect(depositor3).approve(contracts.zapper.address, parseUnits("15000"));
+      await contracts.frax.connect(depositor3).approve(contracts.zapper.address, parseUnits("1000000"));
       await contracts.zapper.connect(depositor3).zapIn(contracts.pool.address, FRAX_TOKEN_ADDRESS, parseEther("15000"));
+    });
 
+    it("Multiple deposits", async function () {
       expect(await contracts.pool.balanceOf(depositor.address)).to.equal(parseEther("9942.518429334402447895"));
       expect(await contracts.pool.balanceOf(depositor1.address)).to.equal(parseEther("24837.370725848887812075"));
       expect(await contracts.pool.balanceOf(depositor2.address)).to.equal(parseEther("149016.123624648447740383"));
       expect(await contracts.pool.balanceOf(depositor3.address)).to.equal(parseEther("14938.232552405515813615"));
 
       expect(await contracts.pool.totalAssets()).to.equal(parseEther("60654500.944694042012671843"));
+    });
+
+    it("Increasing vault assets increases price per pool token", async function () {
       expect(await contracts.pool.pricePerPoolToken()).to.equal(parseEther("0.999999993662252304"));
 
       let [vault] = await contracts.pool.allVaults();
       await contracts.faucet.sendCurveLPTokens(FRAX_LP_TOKEN_ADDRESS, 100, vault);
-      expect(await contracts.pool.totalAssets()).to.equal(parseEther("60857153.177374046977874240"));
+      expect(await contracts.pool.totalAssets()).to.equal(parseEther("60991329.177658312245579728"));
 
-      expect(await contracts.pool.pricePerPoolToken()).to.equal(parseEther("1.003341085060900996"));
+      expect(await contracts.pool.pricePerPoolToken()).to.equal(parseEther("1.002269311968461792"));
+    });
+
+    it("Performance fees", async function () {
+      let [vault] = await contracts.pool.allVaults();
+      await contracts.faucet.sendCurveLPTokens(FRAX_LP_TOKEN_ADDRESS, 1000, vault);
+
+      expect(await contracts.pool.poolTokenHWM()).to.equal(parseEther("1"));
+      await expect(contracts.zapper.connect(depositor).zapIn(contracts.pool.address, DAI_TOKEN_ADDRESS, parseEther("10000"))).to.emit(contracts.pool, 'PerformanceFee').withArgs(parseEther("828.049916799121035737"));
+    });
+
+    it("Withdrawals", async function () {
+      let initialUsdcBalance = await contracts.usdc.balanceOf(depositor.address);
+      let balance = await contracts.pool.balanceOf(depositor.address);
+
+      let [vault] = await contracts.pool.allVaults();
+      await contracts.faucet.sendCurveLPTokens(FRAX_LP_TOKEN_ADDRESS, 1000, vault);
+
+      await contracts.pool.connect(depositor).approve(contracts.zapper.address, balance);
+
+      let withdrawal = contracts.zapper.connect(depositor).zapOut(contracts.pool.address, USDC_TOKEN_ADDRESS, balance);
+      await expect(withdrawal).to.emit(contracts.pool, 'ManagementFee').withArgs(parseEther("0.000384692676585248"));
+      await expect(withdrawal).to.emit(contracts.pool, 'PerformanceFee').withArgs(parseEther("722.007776390485712269"));
+      await expect(withdrawal).to.emit(contracts.pool, 'WithdrawalFee').withArgs(rewardsManager.address, parseEther("50.429982024801619112"));
+      await expect(withdrawal).to.emit(contracts.pool, 'Withdrawal').withArgs(contracts.zapper.address, parseEther("10035.566422935522203406"));
+      expect(await contracts.pool.balanceOf(depositor.address)).to.equal(0);
+      expect((await contracts.usdc.balanceOf(depositor.address)).sub(initialUsdcBalance)).to.equal(parseUnits("10095.597915", 6));
     });
   });
 });
