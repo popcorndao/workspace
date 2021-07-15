@@ -21,6 +21,7 @@ export interface BeneficiaryImage {
 
 export interface BeneficiaryApplication {
   organizationName: string;
+  projectName?: string;
   missionStatement: string;
   beneficiaryAddress: string;
   files: {
