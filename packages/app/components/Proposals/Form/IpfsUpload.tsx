@@ -64,6 +64,14 @@ const videoUploading = (uploadProgress: number, fileType: string): boolean => {
   return uploadProgress > 0 && uploadProgress < 100 && fileType === 'video/*';
 };
 
+const showUploadBox = (
+  numMaxFiles: number,
+  localState: string | string[],
+): boolean => {
+  if (typeof localState === 'string') return localState === '';
+  return localState.length < numMaxFiles;
+};
+
 export default function IpfsUpload({
   stepName,
   localState,
@@ -86,7 +94,7 @@ export default function IpfsUpload({
     isDragReject,
   } = useDropzone({
     accept: fileType,
-    maxFiles: numMaxFiles,
+    maxFiles: numMaxFiles - localState.length,
     validator: (file: File) => {
       return isValidFileSize(file, maxFileSizeMB);
     },
@@ -118,7 +126,7 @@ export default function IpfsUpload({
       <h2 className="text-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
         {stepName}
       </h2>
-      {(!localState || localState.length === 0) &&
+      {showUploadBox(numMaxFiles, localState) &&
       !videoUploading(uploadProgress, fileType) ? (
         <div {...rootProps}>
           <input {...getInputProps()} />

@@ -15,7 +15,7 @@ export default function HeaderImage({
       ...formData,
       files: {
         ...formData.files,
-        impactReports: impactReports,
+        impactReports: formData.files.impactReports.concat(impactReports),
       },
     });
   }
