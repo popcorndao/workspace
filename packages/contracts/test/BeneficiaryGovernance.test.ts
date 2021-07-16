@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { MockContract } from "ethereum-waffle";
 import { parseEther } from "ethers/lib/utils";
-import { waffle, ethers } from "hardhat";
+import { ethers, waffle } from "hardhat";
 import {
   BeneficiaryGovernance,
   BeneficiaryRegistry,
@@ -45,8 +45,10 @@ const ONE_DAY = 86400;
 
 async function deployContracts(): Promise<Contracts> {
   const MockERC20 = await ethers.getContractFactory("MockERC20");
-  const mockPop = await MockERC20.deploy("TestPOP", "TPOP", 18);
-  await mockPop.mint(owner.address, parseEther("50"));
+  const mockPop = await (
+    await MockERC20.deploy("TestPOP", "TPOP", 18)
+  ).deployed();
+  await mockPop.mint(owner.address, parseEther("2050"));
   await mockPop.mint(nonOwner.address, parseEther("50"));
   await mockPop.mint(beneficiary.address, parseEther("50"));
   await mockPop.mint(beneficiary2.address, parseEther("50"));
@@ -70,12 +72,22 @@ async function deployContracts(): Promise<Contracts> {
   const BeneficiaryGovernance = await ethers.getContractFactory(
     "BeneficiaryGovernance"
   );
-  const beneficiaryGovernance = await BeneficiaryGovernance.deploy(
-    mockStaking.address,
-    mockBeneficiaryRegistry.address,
-    mockPop.address,
-    owner.address
-  );
+  const beneficiaryGovernance = await (
+    await BeneficiaryGovernance.deploy(
+      mockStaking.address,
+      mockBeneficiaryRegistry.address,
+      mockPop.address,
+      owner.address
+    )
+  ).deployed();
+
+  await mockPop
+    .connect(owner)
+    .approve(beneficiaryGovernance.address, parseEther("100000"));
+  await beneficiaryGovernance
+    .connect(owner)
+    .contributeReward(parseEther("2000"));
+
   return {
     mockPop,
     mockStaking,
@@ -136,12 +148,31 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockPop
         .connect(proposer2)
         .approve(contracts.beneficiaryGovernance.address, parseEther("3000"));
-      await contracts.beneficiaryGovernance
+      const currentBlock = await waffle.provider.getBlock("latest");
+
+      const result = await contracts.beneficiaryGovernance
         .connect(proposer2)
         .createProposal(
           beneficiary.address,
           ethers.utils.formatBytes32String("testCid"),
           ProposalType.BNP
+        );
+
+      expect(result)
+        .to.emit(contracts.beneficiaryGovernance, "ProposalCreated")
+        .withArgs(
+          PROPOSALID,
+          proposer2.address,
+          beneficiary.address,
+          ethers.utils.formatBytes32String("testCid")
+        );
+      expect(result)
+        .to.emit(contracts.beneficiaryGovernance, "VaultInitialized")
+        .withArgs(
+          ethers.utils.solidityKeccak256(
+            ["uint256", "uint256"],
+            [0, currentBlock.timestamp + 1]
+          )
         );
       const proposal = await contracts.beneficiaryGovernance.proposals(
         PROPOSALID
@@ -177,6 +208,10 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockPop
         .connect(proposer3)
         .approve(contracts.beneficiaryGovernance.address, parseEther("3000"));
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        false
+      );
+
       await expect(
         contracts.beneficiaryGovernance
           .connect(proposer3)
@@ -220,6 +255,53 @@ describe("BeneficiaryGovernance", function () {
           )
       ).to.be.revertedWith(
         "Beneficiary proposal is pending or already exists!"
+      );
+    });
+    it("should prevent to create a BNP proposal for an address which has been registered before", async function () {
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        true
+      );
+      await contracts.mockPop.mint(proposer3.address, parseEther("3000"));
+      await contracts.mockPop
+        .connect(proposer3)
+        .approve(contracts.beneficiaryGovernance.address, parseEther("3000"));
+      await expect(
+        contracts.beneficiaryGovernance
+          .connect(proposer3)
+          .createProposal(
+            beneficiary2.address,
+            ethers.utils.formatBytes32String("testCid"),
+            ProposalType.BNP
+          )
+      ).to.be.revertedWith(
+        "Beneficiary proposal is pending or already exists!"
+      );
+    });
+    it("should not initialize a vault when the needed budget is larger than rewardBudget", async function () {
+      await contracts.beneficiaryGovernance
+        .connect(owner)
+        .setRewardsBudget(parseEther("3000"));
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        false
+      );
+      await contracts.mockPop.mint(proposer3.address, parseEther("3000"));
+      await contracts.mockPop
+        .connect(proposer3)
+        .approve(contracts.beneficiaryGovernance.address, parseEther("3000"));
+      const result = await contracts.beneficiaryGovernance
+        .connect(proposer3)
+        .createProposal(
+          beneficiary2.address,
+          ethers.utils.formatBytes32String("testCid"),
+          ProposalType.BNP
+        );
+      expect(result).to.emit(
+        contracts.beneficiaryGovernance,
+        "ProposalCreated"
+      );
+      expect(result).to.not.emit(
+        contracts.beneficiaryGovernance,
+        "VaultInitialized"
       );
     });
   });
