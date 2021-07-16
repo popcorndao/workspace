@@ -12,7 +12,7 @@ interface SocialMediaTableProps {
   ];
 }
 
-export default function SocialMediaTable({ form }: SocialMediaTableProps) {
+const SocialMediaTable: React.FC<SocialMediaTableProps> = ({ form }) => {
   const [formData, setFormData] = form;
   const { twitterUrl, linkedinUrl, facebookUrl, instagramUrl, githubUrl } =
     formData.links;
@@ -122,4 +122,5 @@ export default function SocialMediaTable({ form }: SocialMediaTableProps) {
       </div>
     </div>
   );
-}
+};
+export default SocialMediaTable

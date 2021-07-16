@@ -9,7 +9,7 @@ import { Dispatch } from 'react';
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import createElectionName from 'utils/createElectionName';
 
-interface IElectionSection {
+interface ElectionSectionProps {
   id: number;
   election: ElectionMetadata;
   voiceCredits: number;
@@ -26,7 +26,7 @@ interface IElectionSection {
   alreadyRegistered: boolean;
 }
 
-export default function ElectionSection({
+const ElectionSection: React.FC<ElectionSectionProps> = ({
   election,
   voiceCredits,
   isWalletConnected,
@@ -38,7 +38,7 @@ export default function ElectionSection({
   scrollToMe,
   userIsEligibleBeneficiary,
   alreadyRegistered,
-}: IElectionSection): JSX.Element {
+}) => {
   const electionOpenForVoting = election.electionState == 1;
   return (
     <div className="flex flex-col">
@@ -81,4 +81,5 @@ export default function ElectionSection({
       </div>
     </div>
   );
-}
+};
+export default ElectionSection

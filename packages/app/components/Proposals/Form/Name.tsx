@@ -4,11 +4,11 @@ import ControlledTextInput from './ControlledTextInput';
 import inputExists from 'utils/isValidInput';
 import ContinueButton from './ContinueButton';
 
-export default function Name({
+const Name: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps): JSX.Element {
+}) => {
   const [formData, setFormData] = form;
 
   function updateName(value: string): void {
@@ -30,9 +30,10 @@ export default function Name({
           isValid={inputExists}
         />
         {inputExists(formData.organizationName) && (
-          <ContinueButton {...navigation} />
+          <ContinueButton navigation={navigation} />
         )}
       </div>
     )
   );
-}
+};
+export default Name

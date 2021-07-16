@@ -10,11 +10,11 @@ interface BeneficiaryGridProps {
   title: string;
 }
 
-export default function BeneficiaryGrid({
+const BeneficiaryGrid: React.FC<BeneficiaryGridProps> = ({
   beneficiaries,
   subtitle,
   title,
-}: BeneficiaryGridProps) {
+}: BeneficiaryGridProps) => {
   const [searchFilter, setSearchFilter] = useState<string>('');
 
   return (
@@ -43,9 +43,11 @@ export default function BeneficiaryGrid({
               .includes(searchFilter.toLowerCase());
           })
           .map((beneficiary) => (
-            <BeneficiaryCard {...beneficiary} />
+            <BeneficiaryCard beneficiary={beneficiary} />
           ))}
       </ul>
     </div>
   );
-}
+};
+
+export default BeneficiaryGrid

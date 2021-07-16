@@ -3,7 +3,7 @@ import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { useContext } from 'react';
 
-export default function TriggerTakedownProposal(): JSX.Element {
+const TriggerTakedownProposal: React.FC = () => {
   const { dispatch } = useContext(store);
   const triggerTakedownProposal = () => {
     dispatch(
@@ -67,4 +67,5 @@ export default function TriggerTakedownProposal(): JSX.Element {
       </div>
     </footer>
   );
-}
+};
+export default TriggerTakedownProposal

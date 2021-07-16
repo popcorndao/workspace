@@ -18,11 +18,11 @@ const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
 const uploadError = (errMsg: string) => toast.error(errMsg);
 
-export default function Preview({
+const Preview: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps): JSX.Element {
+}) => {
   const context = useWeb3React<Web3Provider>();
 
   const { dispatch } = useContext(store);
@@ -35,7 +35,7 @@ export default function Preview({
 
   useEffect(() => {
     if (contracts) {
-      getProposalBond().then((proprosalBond) => setProposalBond(proprosalBond));
+      getProposalBond().then((proposalBond) => setProposalBond(proposalBond));
     }
   }, [contracts]);
 
@@ -146,6 +146,7 @@ export default function Preview({
               type="button"
               className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               onClick={() => {
+                // FIXME: Promise ignored
                 uploadJsonToIpfs(formData);
               }}
             >
@@ -158,4 +159,5 @@ export default function Preview({
       </div>
     )
   );
-}
+};
+export default Preview

@@ -7,7 +7,11 @@ export enum Gas {
   Fast,
 }
 
-export default function GasSlider({ setGas }): JSX.Element {
+export interface GasSliderProps {
+  setGas: any
+}
+
+const GasSlider: React.FC<GasSliderProps> = ({ setGas }) => {
   const [value, setValue] = useState(1);
 
   const sliderSteps = [
@@ -61,4 +65,5 @@ export default function GasSlider({ setGas }): JSX.Element {
       </div>
     </>
   );
-}
+};
+export default GasSlider

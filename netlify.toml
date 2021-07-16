@@ -7,7 +7,7 @@
     mode = 'prefix'
 
 [context.deploy-preview]
-  command = "cd packages/utils; yarn build; cd ../../packages/contracts; yarn compile; cd ../../packages/app; yarn build;"
+  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build;"
   
 
   [context.deploy-preview.environment]
@@ -28,8 +28,7 @@
     PRIVATE_SALE_DEFAULT_SUPPLY = "7500000"
 
 [context.production]
-  command = "cd packages/utils; yarn build; cd ../../packages/contracts; yarn compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
-  publish = "packages/app/out"
+  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build;"
 
   [context.production.environment]
     # this is a random private key needed for hardhat compile to work
@@ -51,7 +50,7 @@
 
 
 [context.rinkeby]
-  command = "cd packages/utils; yarn build; cd ../../packages/contracts; yarn compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
+  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build;"
 
   publish = "packages/app/out"
   [context.rinkeby.environment]
@@ -72,9 +71,8 @@
     PRIVATE_SALE_DEFAULT_SUPPLY = "7500000"
 
 [context.develop]
-  command = "cd packages/utils; yarn build; cd ../../packages/contracts; yarn compile; cd ../../packages/app; yarn build; rm -rf ../../.next; mv .next ../../; mv public ../../; cd ../../"
+  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build;"
 
-  publish = "packages/app/out"
   [context.develop.environment]
     # this is a random private key needed for hardhat compile to work
     PRIVATE_KEY = "31c18a7e6aaf93d1548ec9ae1b322c75400cb39627ae82bd1bb761ea79224a7d"

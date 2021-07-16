@@ -16,7 +16,7 @@ export interface Notification {
   backdrop?: boolean;
 }
 
-export default function Example() {
+const Example: React.FC = () => {
   const {
     dispatch,
     state: { notifications },
@@ -110,4 +110,5 @@ export default function Example() {
       </div>
     </>
   );
-}
+};
+export default Example

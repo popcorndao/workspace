@@ -3,11 +3,11 @@ import React from 'react';
 import IpfsUpload from './IpfsUpload';
 import ActionButtons from './IpfsUploadActionButtons';
 
-export default function ProfileImage({
+const ProfileImage: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps) {
+}) => {
   const [formData, setFormData] = form;
   function updateVideo(video) {
     setFormData({ ...formData, files: { ...formData.files, video } });
@@ -22,7 +22,7 @@ export default function ProfileImage({
       },
     });
   }
-  
+
   return (
     visible && (
       <>
@@ -45,4 +45,5 @@ export default function ProfileImage({
       </>
     )
   );
-}
+};
+export default ProfileImage

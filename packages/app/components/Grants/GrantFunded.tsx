@@ -9,10 +9,10 @@ interface GrantFundedProps {
   electionProps: ElectionProps;
 }
 
-export default function GrantFunded({
+const GrantFunded: React.FC<GrantFundedProps> = ({
   beneficiary,
   electionProps,
-}: GrantFundedProps): JSX.Element {
+}) => {
   const { contracts } = useContext(ContractsContext);
   const [awarded, setAwarded] = useState(false);
 
@@ -29,6 +29,7 @@ export default function GrantFunded({
 
   useEffect(() => {
     if (contracts?.grant) {
+      // FIXME: Promise being ignored
       isBeneficiaryGrantRecipient();
     }
   }, [contracts]);
@@ -48,4 +49,5 @@ export default function GrantFunded({
       </div>
     </span>
   );
-}
+};
+export default GrantFunded

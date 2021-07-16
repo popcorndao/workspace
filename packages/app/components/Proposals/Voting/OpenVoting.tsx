@@ -8,7 +8,7 @@ import CountdownTimer from './CountdownTimer';
 import { useWeb3React } from '@web3-react/core';
 import { VoteOptions } from "@popcorn/contracts/lib/BeneficiaryGovernance/constants";
 
-export default function OpenVoting(proposal: Proposal): JSX.Element {
+const OpenVoting: React.FC<Proposal> = (proposal) => {
   const { dispatch } = useContext(store);
   const [selected, setSelected] = useState<VoteOptions>(VoteOptions.Yay);
   const { contracts } = useContext(ContractsContext);
@@ -163,4 +163,5 @@ export default function OpenVoting(proposal: Proposal): JSX.Element {
       </div>
     </div>
   );
-}
+};
+export default OpenVoting

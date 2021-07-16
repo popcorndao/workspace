@@ -24,7 +24,12 @@ export const BackgroundImageContainer = styled.div<{ imgSrc: string }>`
 //  background-color: #000;
 // background-image: url(${(props) => props.imgSrc});
 
-export const withBackgroundImage = (children, src: string) => {
+export interface WithBackgroundImageProps {
+  children: React.FC,
+  src: string
+}
+
+export const withBackgroundImage: React.FC<WithBackgroundImageProps> = (children, src: string) => {
   if (src) {
     return (
       <BackgroundImageContainer imgSrc={src}>

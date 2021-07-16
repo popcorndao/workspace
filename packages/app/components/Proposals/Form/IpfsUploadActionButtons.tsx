@@ -6,10 +6,10 @@ interface ActionButtonProps {
   navigation: Navigation;
 }
 
-export default function ActionButtons({
+const ActionButtons: React.FC<ActionButtonProps> = ({
   clearLocalState,
   navigation,
-}: ActionButtonProps): JSX.Element {
+}) => {
   const { setCurrentStep, currentStep, setStepLimit } = navigation;
   return (
       <div className="flex flex-row w-60 mx-auto mt-4 justify-between">
@@ -32,4 +32,5 @@ export default function ActionButtons({
         </button>
       </div>
   );
-}
+};
+export default ActionButtons

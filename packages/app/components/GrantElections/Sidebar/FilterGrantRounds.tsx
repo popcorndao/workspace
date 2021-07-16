@@ -1,15 +1,15 @@
 import { IGrantRoundFilter } from 'pages/grant-elections/[type]';
 import { Dispatch } from 'react';
 
-interface IFilterGrantRounds {
+interface FilterGrantRoundsProps {
   grantRoundFilter: IGrantRoundFilter;
   setGrantRoundFilter: Dispatch<IGrantRoundFilter>;
 }
 
-export default function FilterGrantRounds({
+const FilterGrantRounds: React.FC<FilterGrantRoundsProps> = ({
   grantRoundFilter,
   setGrantRoundFilter,
-}: IFilterGrantRounds): JSX.Element {
+}) => {
   function filterGrantRounds(key: string): void {
     const shallow = { ...grantRoundFilter };
     shallow[key] = !shallow[key];
@@ -37,4 +37,5 @@ export default function FilterGrantRounds({
       ))}
     </span>
   );
-}
+};
+export default FilterGrantRounds

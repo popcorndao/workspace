@@ -19,14 +19,14 @@ export const DefaultDualActionWideModalProps = {
   onConfirm: { label: '', onClick: () => {} },
 };
 
-export default function Example({
+const Example: React.FC<DualActionWideModalProps> = ({
   content,
   title,
   visible,
   progress,
   onConfirm,
   onDismiss,
-}: DualActionWideModalProps) {
+}) => {
   const [open, setOpen] = useState(visible);
   const cancelButtonRef = useRef();
 
@@ -131,4 +131,5 @@ export default function Example({
       </Dialog>
     </Transition.Root>
   );
-}
+};
+export default Example

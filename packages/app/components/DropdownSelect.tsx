@@ -7,12 +7,12 @@ interface DropdownSelectProps {
   selectOption: Dispatch<any>;
 }
 
-export default function DropdownSelect({
+const DropdownSelect: React.FC<DropdownSelectProps> = ({
   label,
   selectOptions,
   selectOption,
   selectedValue,
-}: DropdownSelectProps): JSX.Element {
+}) => {
   const [showOptions, setShowOptions] = useState<boolean>(false);
   return (
     <div className="relative inline-block text-left">
@@ -64,4 +64,5 @@ export default function DropdownSelect({
       )}
     </div>
   );
-}
+};
+export default DropdownSelect

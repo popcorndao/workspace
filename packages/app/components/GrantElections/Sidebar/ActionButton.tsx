@@ -1,7 +1,8 @@
 import { useRouter } from 'next/router';
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
+import React from "react";
 
-interface ISidebarActionButton {
+interface SidebarActionButtonProps {
   election: ElectionMetadata;
   hasLockedPop: boolean;
   isWalletConnected: boolean;
@@ -9,13 +10,13 @@ interface ISidebarActionButton {
   submitVotes: Function;
 }
 
-export default function SidebarActionButton({
+const SidebarActionButton: React.FC<SidebarActionButtonProps> = ({
   election,
   hasLockedPop,
   isWalletConnected,
   connectWallet,
   submitVotes,
-}: ISidebarActionButton): JSX.Element {
+}) => {
   const router = useRouter();
 
   if (!isWalletConnected) {
@@ -44,4 +45,5 @@ export default function SidebarActionButton({
       </button>
     );
   }
-}
+};
+export default SidebarActionButton

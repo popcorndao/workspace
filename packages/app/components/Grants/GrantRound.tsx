@@ -10,7 +10,7 @@ import { PendingVotes, Vote, Votes } from 'pages/grant-elections/[type]';
 import BeneficiaryCardWithElectionData from './BeneficiaryCardWithElectionData';
 
 import { useContext, useEffect, useRef, useState } from 'react';
-interface IGrantRound {
+interface GrantRoundProps {
   voiceCredits: number;
   votes?: Vote[];
   assignVotes?: (grantTerm: number, vote: Vote) => void;
@@ -33,13 +33,13 @@ const convertBlockchainVotesToVoiceCredits = (
   );
 };
 
-export default function GrantRound({
+const GrantRound: React.FC<GrantRoundProps> = ({
   voiceCredits,
   assignVotes,
   pendingVotes,
   election,
   scrollToMe = false,
-}: IGrantRound): JSX.Element {
+}) => {
   const { contracts } = useContext(ContractsContext);
   const ref = useRef(null);
   const [votes, setVotes] = useState<Votes>({ total: 0 });
@@ -73,6 +73,7 @@ export default function GrantRound({
 
   useEffect(() => {
     if (votes && election) {
+      // FIXME: Promise being ignored
       getAllBeneficiaries(election.registeredBeneficiaries);
     }
   }, [votes, election]);
@@ -106,4 +107,5 @@ export default function GrantRound({
       ))}
     </div>
   );
-}
+};
+export default GrantRound

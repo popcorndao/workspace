@@ -18,11 +18,13 @@ import {
   TakedownStageExplanations,
 } from './StageExplanations';
 
-export default function ProposalGrid({
+export interface ProposalGridProps {
+    proposalType: ProposalType
+}
+
+const ProposalGrid: React.FC<ProposalGridProps> = ({
   proposalType,
-}: {
-  proposalType: ProposalType;
-}): JSX.Element {
+}) => {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<Status>(Status.All);
@@ -153,4 +155,5 @@ export default function ProposalGrid({
       </ul>
     </div>
   );
-}
+};
+export default ProposalGrid

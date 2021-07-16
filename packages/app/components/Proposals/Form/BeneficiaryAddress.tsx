@@ -3,11 +3,11 @@ import { FormStepProps } from 'pages/proposals/propose';
 import ControlledTextInput from './ControlledTextInput';
 import ContinueButton from './ContinueButton';
 
-export default function BeneficiaryAddress({
+const BeneficiaryAddress: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps): JSX.Element {
+}) => {
   const [formData, setFormData] = form;
   function updateEthereumAddress(beneficiaryAddress: string): void {
     setFormData({ ...formData, beneficiaryAddress });
@@ -33,4 +33,5 @@ export default function BeneficiaryAddress({
       </div>
     )
   );
-}
+};
+export default BeneficiaryAddress

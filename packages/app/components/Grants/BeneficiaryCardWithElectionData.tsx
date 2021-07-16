@@ -16,7 +16,7 @@ export interface ElectionProps {
   totalVotes: number;
 }
 
-interface IBeneficiaryCard {
+interface BeneficiaryCardWithElectionDataProps {
   beneficiary: BeneficiaryApplication;
   electionProps: ElectionProps;
 }
@@ -31,11 +31,11 @@ const truncate = (input: string): string => {
   return trimmedOnCompleteWord + ' ...';
 };
 
-export default function BeneficiaryCardWithElectionData({
+const BeneficiaryCardWithElectionData: React.FC<BeneficiaryCardWithElectionDataProps> = ({
   electionProps,
   beneficiary,
-}: IBeneficiaryCard): JSX.Element {
-  return (
+}) => {
+  return(
     <div className="shadow-sm w-80 h-auto rounded-lg mr-8 mb-16 bg-white border-b border-gray-200 ">
       <Link href={`/beneficiary/${beneficiary?.beneficiaryAddress}`} passHref>
         <a>
@@ -44,16 +44,16 @@ export default function BeneficiaryCardWithElectionData({
               className="w-100 h-auto md:w-100 md:h-auto md:rounded-t rounded-t mx-auto"
               src={`${process.env.IPFS_URL}${beneficiary?.files?.profileImage?.image}`}
               alt=""
-              style={{ objectFit: 'cover', height: '140px' }}
-            ></img>
+              style={{objectFit: 'cover', height: '140px'}}
+              />
           </div>
         </a>
       </Link>
       <div className="w-full px-4 pb-6 pt-6">
         <div className="h-10 mt-3">
           <Link
-            href={`/beneficiary/${beneficiary?.beneficiaryAddress}`}
-            passHref
+              href={`/beneficiary/${beneficiary?.beneficiaryAddress}`}
+              passHref
           >
             <a>
               <h3 className="text-lg font-bold text-gray-800 leading-snug">
@@ -64,8 +64,8 @@ export default function BeneficiaryCardWithElectionData({
         </div>
         <div className="h-32">
           <Link
-            href={`/beneficiary/${beneficiary?.beneficiaryAddress}`}
-            passHref
+              href={`/beneficiary/${beneficiary?.beneficiaryAddress}`}
+              passHref
           >
             <a>
               <p className="text-sm text-gray-700">
@@ -76,18 +76,19 @@ export default function BeneficiaryCardWithElectionData({
         </div>
         <div className="">
           {GrantElectionAdapter().isActive(electionProps.election) ? (
-            <VoteSlider
-              electionProps={electionProps}
-              beneficiary={beneficiary}
-            />
+              <VoteSlider
+                  electionProps={electionProps}
+                  beneficiary={beneficiary}
+              />
           ) : (
-            <GrantFunded
-              electionProps={electionProps}
-              beneficiary={beneficiary}
-            />
+              <GrantFunded
+                  electionProps={electionProps}
+                  beneficiary={beneficiary}
+              />
           )}
         </div>
       </div>
     </div>
   );
-}
+};
+export default BeneficiaryCardWithElectionData

@@ -4,11 +4,11 @@ import ControlledTextInput from './ControlledTextInput';
 import inputExists from 'utils/isValidInput';
 import ContinueButton from './ContinueButton';
 
-export default function MissionStatement({
+const MissionStatement: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps): JSX.Element {
+}) => {
   const [formData, setFormData] = form;
   function updateMissionStatement(value: string): void {
     setFormData({ ...formData, missionStatement: value });
@@ -29,9 +29,10 @@ export default function MissionStatement({
           isValid={inputExists}
         />
         {inputExists(formData?.missionStatement) && (
-          <ContinueButton {...navigation} />
+          <ContinueButton navigation={navigation} />
         )}
       </div>
     )
   );
-}
+};
+export default MissionStatement

@@ -8,27 +8,28 @@ import NavBar from 'components/NavBar/NavBar';
 import PhotoSideBar from '../CommonComponents/PhotoSideBar';
 import TriggerTakedownProposal from '../CommonComponents/TriggerTakedownProposal';
 
-interface BeneficiaryPageProps {
+export interface BeneficiaryPageProps {
   beneficiary: BeneficiaryApplication;
   isProposalPreview?: boolean;
 }
 
-export default function BeneficiaryPage({
+const BeneficiaryPage: React.FC<BeneficiaryPageProps> = ({
   beneficiary,
   isProposalPreview = false,
-}: BeneficiaryPageProps): JSX.Element {
-  return (
-    <div className="relative">
-      {!isProposalPreview && <NavBar />}
-      <ImageHeader beneficiary={beneficiary} />
-      <div className="grid grid-cols-8 gap-4 space-x-12 mx-auto px-8">
-        <div className="col-span-2 space-y-4">
-          <VideoSideBar {...beneficiary} />
-          <PhotoSideBar {...beneficiary} />
+}: BeneficiaryPageProps): JSX.Element => {
+    return(
+        <div className="relative">
+            {!isProposalPreview && <NavBar/>}
+            <ImageHeader beneficiary={beneficiary}/>
+            <div className="grid grid-cols-8 gap-4 space-x-12 mx-auto px-8">
+                <div className="col-span-2 space-y-4">
+                    <VideoSideBar {...beneficiary} />
+                    <PhotoSideBar {...beneficiary} />
+                </div>
+                <BeneficiaryInformation beneficiary={beneficiary} />
+            </div>
+            {!isProposalPreview && <TriggerTakedownProposal/>}
         </div>
-        <BeneficiaryInformation {...beneficiary} />
-      </div>
-      {!isProposalPreview && <TriggerTakedownProposal />}
-    </div>
-  );
-}
+    );
+};
+export default BeneficiaryPage

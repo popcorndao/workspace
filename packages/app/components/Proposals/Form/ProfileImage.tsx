@@ -6,11 +6,11 @@ import { DisplayImages } from './DisplayFiles';
 import IpfsUpload from './IpfsUpload';
 import ActionButtons from './IpfsUploadActionButtons';
 
-export default function ProfileImage({
+const ProfileImage: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps) {
+}) => {
   const [formData, setFormData] = form;
 
   function updateProfileImage(profileImage: string): void {
@@ -89,4 +89,5 @@ export default function ProfileImage({
       </>
     )
   );
-}
+};
+export default ProfileImage

@@ -2,11 +2,12 @@ import { useRouter } from 'next/router';
 import NavbarLink from './NavbarLinks';
 import * as Icon from 'react-feather';
 
-interface Props {
+interface ProposalsMenuProps {
   visible: boolean;
   toggleSubMenu: Function;
 }
-export const ProposalsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
+
+export const ProposalsMenu: React.FC<ProposalsMenuProps> = ({ visible, toggleSubMenu }) => {
   const router = useRouter();
   return visible && (
     <div className="absolute z-10 left-4/5 transform  -translate-x-1 mt-5 px-2 w-screen max-w-xs sm:px-0">

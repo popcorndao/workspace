@@ -5,11 +5,11 @@ import {
 import { useRouter } from 'next/router';
 import NavbarLink from './NavbarLinks';
 
-interface Props {
+interface GrantsMenuProps {
   visible: boolean;
   toggleSubMenu: Function;
 }
-export const GrantsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
+export const GrantsMenu: React.FC<GrantsMenuProps> = ({ visible, toggleSubMenu }) => {
   const router = useRouter();
   if (!visible) return <></>;
   return (

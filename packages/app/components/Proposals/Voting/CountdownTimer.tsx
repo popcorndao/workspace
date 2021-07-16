@@ -23,7 +23,7 @@ const getTimeLeft = (stageDeadline: Date): string => {
   return 'Voting has ended';
 };
 
-export default function CountdownTimer(proposal: Proposal) {
+const CountdownTimer: React.FC<Proposal> = (proposal) => {
   const [timeLeft, setTimeLeft] = useState<string>(
     getTimeLeft(proposal?.stageDeadline),
   );
@@ -44,4 +44,5 @@ export default function CountdownTimer(proposal: Proposal) {
       </p>
     </div>
   );
-}
+};
+export default CountdownTimer

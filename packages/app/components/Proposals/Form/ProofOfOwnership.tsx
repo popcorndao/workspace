@@ -4,13 +4,13 @@ import ControlledTextInput from './ControlledTextInput';
 import inputExists from 'utils/isValidInput';
 import ContinueButton from './ContinueButton';
 
-export default function ProofOfOwnership({
+const ProofOfOwnership: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps): JSX.Element {
+}) => {
   const [formData, setFormData] = form;
-  
+
   function updateProofOfOwnership(proofOfOwnership: string): void {
     setFormData({
       ...formData,
@@ -40,9 +40,10 @@ export default function ProofOfOwnership({
           isValid={inputExists}
         />
         {inputExists(formData?.links?.proofOfOwnership) && (
-          <ContinueButton {...navigation} />
+          <ContinueButton navigation={navigation} />
         )}
       </div>
     )
   );
-}
+};
+export default ProofOfOwnership

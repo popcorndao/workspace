@@ -18,23 +18,23 @@ export const DisplayImages: React.FC<DisplayFilesProps> = ({
             return (
               <div key={imgHash}>
                 <img
-                  src={
-                    imgHash.length > 0 &&
-                    'https://gateway.pinata.cloud/ipfs/' + imgHash
-                  }
-                ></img>
+                    src={
+                        imgHash.length > 0 &&
+                        'https://gateway.pinata.cloud/ipfs/' + imgHash
+                    }
+                    />
               </div>
             );
           })}
         </div>
       ) : (
         <img
-          className="w-1/4 justify-self-center"
-          src={
-            localState.length > 0 &&
-            'https://gateway.pinata.cloud/ipfs/' + localState
-          }
-        ></img>
+            className="w-1/4 justify-self-center"
+            src={
+                localState.length > 0 &&
+                'https://gateway.pinata.cloud/ipfs/' + localState
+            }
+            />
       )}
     </div>
   );

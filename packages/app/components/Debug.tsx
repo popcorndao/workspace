@@ -2,7 +2,8 @@ import { store } from '../context/store';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect } from 'react';
 import { setDualActionWideModal } from '../context/actions';
-export function Debug() {
+
+export const Debug: React.FC = () => {
   const { dispatch } = useContext(store);
   const router = useRouter();
   useEffect(() => {
@@ -34,4 +35,4 @@ export function Debug() {
     }
   }, [router]);
   return <></>;
-}
+};

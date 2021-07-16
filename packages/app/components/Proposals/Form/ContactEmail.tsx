@@ -4,11 +4,11 @@ import inputExists from 'utils/isValidInput';
 import ContinueButton from './ContinueButton';
 import ControlledTextInput from './ControlledTextInput';
 
-export default function ContactEmail({
+const ContactEmail: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps): JSX.Element {
+}) => {
   const [formData, setFormData] = form;
 
   function isValid(email): boolean {
@@ -41,4 +41,5 @@ export default function ContactEmail({
       </div>
     )
   );
-}
+};
+export default ContactEmail

@@ -8,13 +8,13 @@ interface NavbarLinkProps {
   target?: string;
 }
 
-export default function NavbarLink({
+const NavbarLink: React.FC<NavbarLinkProps> = ({
   label,
   url,
   isActive,
   onClick,
   target,
-}: NavbarLinkProps): JSX.Element {
+}) => {
   const className = `
     font-medium 
     text-lg ${isActive ? 'text-indigo-500 font-bold' : 'text-gray-700'} 
@@ -48,4 +48,5 @@ export default function NavbarLink({
       </a>
     </Link>
   );
-}
+};
+export default NavbarLink

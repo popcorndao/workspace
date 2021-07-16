@@ -1,19 +1,19 @@
 import { PendingVotes } from '../../../pages/grant-elections/[type]';
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
 
-interface VoteCounter {
+interface VoteCounterProps {
   election: ElectionMetadata;
   pendingVotes: PendingVotes;
   maxVotes: number;
   voiceCredits: number;
 }
 
-export default function VoteCounter({
+const VoteCounter: React.FC<VoteCounterProps> = ({
   election,
   pendingVotes,
   maxVotes,
   voiceCredits,
-}: VoteCounter): JSX.Element {
+}) => {
   if (!voiceCredits) {
     return <></>;
   }
@@ -25,4 +25,5 @@ export default function VoteCounter({
       </p>
     </div>
   );
-}
+};
+export default VoteCounter

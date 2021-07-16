@@ -3,11 +3,11 @@ import { DisplayPDFs } from './DisplayFiles';
 import IpfsUpload from './IpfsUpload';
 import ActionButtons from './IpfsUploadActionButtons';
 
-export default function HeaderImage({
+const HeaderImage: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps) {
+}) => {
   const [formData, setFormData] = form;
 
   function updateImpactReports(impactReports: string[]): void {
@@ -56,4 +56,5 @@ export default function HeaderImage({
       </>
     )
   );
-}
+};
+export default HeaderImage

@@ -10,7 +10,7 @@ interface ControlledTextInputProps {
   inputIndex?: number;
 }
 
-export default function ControlledTextInput({
+const ControlledTextInput: React.FC<ControlledTextInputProps> = ({
   inputValue,
   id,
   placeholder,
@@ -18,7 +18,8 @@ export default function ControlledTextInput({
   isValid,
   updateInput,
   inputIndex,
-}: ControlledTextInputProps): JSX.Element {
+}) => {
+  console.log('inputIndex', inputIndex);
   return (
     <>
       <div className="mt-1 relative rounded-md shadow-sm">
@@ -56,4 +57,5 @@ export default function ControlledTextInput({
       )}
     </>
   );
-}
+};
+export default ControlledTextInput

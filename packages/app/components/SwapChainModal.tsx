@@ -6,7 +6,7 @@ import { networkMap } from '../context/Web3/connectors';
 import { setSingleActionModal } from '../context/actions';
 import { store } from '../context/store';
 
-export default function SwapChainModal(): JSX.Element {
+const SwapChainModal: React.FC = () => {
   const context = useWeb3React<Web3Provider>();
   const { account, chainId } = context;
   const { dispatch } = useContext(store);
@@ -31,4 +31,5 @@ export default function SwapChainModal(): JSX.Element {
   }, [chainId, account]);
 
   return <></>;
-}
+};
+export default SwapChainModal

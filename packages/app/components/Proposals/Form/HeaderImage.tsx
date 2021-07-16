@@ -5,11 +5,11 @@ import { DisplayImages } from './DisplayFiles';
 import IpfsUpload from './IpfsUpload';
 import ActionButtons from './IpfsUploadActionButtons';
 
-export default function HeaderImage({
+const HeaderImage: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps) {
+}) => {
   const [formData, setFormData] = form;
 
   function updateHeaderImage(headerImage: string): void {
@@ -88,4 +88,5 @@ export default function HeaderImage({
       </>
     )
   );
-}
+};
+export default HeaderImage

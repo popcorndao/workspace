@@ -2,10 +2,14 @@ import { PaperClipIcon } from '@heroicons/react/solid';
 import { BeneficiaryApplication } from '@popcorn/utils';
 import SocialMedia from '../CommonComponents/SocialMedia';
 
-export default function BeneficiaryInformation(
-  beneficiary: BeneficiaryApplication,
-): JSX.Element {
-  return (
+export interface BeneficiaryInformationProps {
+  beneficiary: BeneficiaryApplication
+}
+
+const BeneficiaryInformation: React.FC<BeneficiaryInformationProps> = (
+    {beneficiary}
+) => {
+  return(
     <div className="col-span-6">
       <div className="bg-white shadow overflow-hidden sm:rounded-lg my-4">
         <div className="px-4 py-5 sm:px-6">
@@ -47,29 +51,29 @@ export default function BeneficiaryInformation(
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 <ul className="border border-gray-200 rounded-md divide-y divide-gray-200">
                   {beneficiary?.files?.impactReports?.map(
-                    (reportUrl, index) => {
-                      return (
-                        <li className="pl-3 pr-4 py-3 flex items-center justify-between text-sm">
-                          <div className="w-0 flex-1 flex items-center">
-                            <PaperClipIcon
-                              className="flex-shrink-0 h-5 w-5 text-gray-400"
-                              aria-hidden="true"
-                            />
-                            <span className="ml-2 flex-1 w-0 truncate">
-                              Impact report / audit {index + 1}
-                            </span>
-                          </div>
-                          <div className="ml-4 flex-shrink-0">
-                            <a
-                              href={`${process.env.IPFS_URL}${reportUrl}`}
-                              className="font-medium text-indigo-600 hover:text-indigo-500"
-                            >
-                              Download
-                            </a>
-                          </div>
-                        </li>
-                      );
-                    },
+                      (reportUrl, index) => {
+                        return (
+                            <li className="pl-3 pr-4 py-3 flex items-center justify-between text-sm">
+                              <div className="w-0 flex-1 flex items-center">
+                                <PaperClipIcon
+                                    className="flex-shrink-0 h-5 w-5 text-gray-400"
+                                    aria-hidden="true"
+                                />
+                                <span className="ml-2 flex-1 w-0 truncate">
+                                Impact report / audit {index + 1}
+                              </span>
+                              </div>
+                              <div className="ml-4 flex-shrink-0">
+                                <a
+                                    href={`${process.env.IPFS_URL}${reportUrl}`}
+                                    className="font-medium text-indigo-600 hover:text-indigo-500"
+                                >
+                                  Download
+                                </a>
+                              </div>
+                            </li>
+                        );
+                      },
                   )}
                 </ul>
               </dd>
@@ -87,4 +91,5 @@ export default function BeneficiaryInformation(
       </div>
     </div>
   );
-}
+};
+export default BeneficiaryInformation

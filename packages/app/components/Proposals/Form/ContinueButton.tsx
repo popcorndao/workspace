@@ -1,7 +1,11 @@
 import { CheckIcon } from '@heroicons/react/outline';
 import { Navigation } from 'pages/proposals/propose';
 
-export default function ContinueButton(navigation:Navigation): JSX.Element {
+export interface ContinueButtonProps {
+    navigation: Navigation,
+}
+
+const ContinueButton: React.FC<ContinueButtonProps> = ({navigation}) => {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   return (
     <div className="grid justify-items-stretch">
@@ -17,4 +21,5 @@ export default function ContinueButton(navigation:Navigation): JSX.Element {
       </button>
     </div>
   );
-}
+};
+export default ContinueButton
