@@ -94,10 +94,8 @@ export default function BeneficiaryProposal(): JSX.Element {
     const stepName = router.query.step as string;
     const stepIndex = stepOrder.indexOf(stepName);
     if (stepName && stepIndex !== -1) {
-      if (stepIndex && stepIndex !== currentStep && stepIndex < stepLimit)
+      if (stepIndex !== undefined && stepIndex !== currentStep)
         setCurrentStep(stepIndex);
-      if (stepIndex && stepIndex !== currentStep && stepIndex >= stepLimit)
-        setCurrentStep(stepLimit);
     }
   }, [router]);
 

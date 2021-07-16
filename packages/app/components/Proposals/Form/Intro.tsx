@@ -183,19 +183,19 @@ export default function Intro({
               <div className="mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5">
                 {/* Check for partially completed form */}
                 {formData.organizationName !== '' && (
-                  <a
-                    href="#"
+                  <button
+                    type="button"
                     onClick={() => {
                       setCurrentStep(currentStep + 1);
                     }}
                     className="flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 bg-origin-border px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white hover:from-purple-700 hover:to-indigo-700"
                   >
                     Continue existing application
-                  </a>
+                  </button>
                 )}
 
-                <a
-                  href="#"
+                <button
+                  type="button"
                   onClick={() => {
                     setCurrentStep(1);
                     setStepLimit(1);
@@ -204,7 +204,7 @@ export default function Intro({
                   className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100"
                 >
                   Begin new application
-                </a>
+                </button>
               </div>
             </div>
           </div>
