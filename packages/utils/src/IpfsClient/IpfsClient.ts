@@ -8,7 +8,13 @@ export interface IIpfsClient {
   upload: (
     file: File,
     setUploadProgress?: (progress: number) => void,
-  ) => Promise<string>;
+  ) => Promise<UploadResult>;
+}
+
+export interface UploadResult {
+  status: number;
+  hash?: string;
+  errorDetails?: string;
 }
 
 export const IpfsClient = (): IIpfsClient => {
@@ -47,7 +53,7 @@ export const IpfsClient = (): IIpfsClient => {
     upload: async (
       file: File,
       setUploadProgress?: (progress: number) => void,
-    ): Promise<string> => {
+    ): Promise<UploadResult> => {
       var data = new FormData();
       data.append('file', file, file.name);
       const headers = {
@@ -71,10 +77,15 @@ export const IpfsClient = (): IIpfsClient => {
       return await axios
         .post('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)
         .then((result) => {
-          return result.data.IpfsHash;
+          return { hash: result.data.IpfsHash, status: result.status };
         })
         .catch((error) => {
-          console.log(error);
+          if (error.response) {
+            return {
+              status: error.response.status,
+              errorDetails: error.response.data.error.details,
+            };
+          }
           return error;
         });
     },

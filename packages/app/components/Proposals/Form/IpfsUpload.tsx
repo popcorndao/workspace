@@ -1,4 +1,5 @@
 import { IpfsClient } from '@popcorn/utils';
+import { UploadResult } from '@popcorn/utils/IpfsClient/IpfsClient';
 import ProgressBar from 'components/ProgressBar';
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -6,9 +7,12 @@ import * as Icon from 'react-feather';
 import toast from 'react-hot-toast';
 import { DisplayVideo } from './DisplayFiles';
 
-const success = () => toast.success('Successful upload to IPFS');
+const success = (msg: string) => toast.success(msg);
 const loading = () => toast.loading('Uploading to IPFS...');
 const uploadError = (errMsg: string) => toast.error(errMsg);
+
+const isSuccessfulUpload = (res: UploadResult): boolean => res.status === 200;
+const isFailedUpload = (res: UploadResult): boolean => res.status !== 200;
 
 export const uploadSingleFile = async (
   files: File[],
@@ -16,25 +20,62 @@ export const uploadSingleFile = async (
   setUploadProgress?: (progress: number) => void,
 ) => {
   loading();
-  const hash = await IpfsClient().upload(files[0], setUploadProgress);
-  setVideo(hash);
-  toast.dismiss();
-  success();
+  const res = await IpfsClient().upload(files[0], setUploadProgress);
+  if (isSuccessfulUpload(res)) {
+    setVideo(res.hash);
+    toast.dismiss();
+    success('Successful upload to IPFS');
+  } else {
+    toast.dismiss();
+    uploadError(
+      `Upload was unsuccessful with status ${res.status}. ${res.errorDetails}`,
+    );
+  }
 };
 
 async function uploadMultipleFiles(
   files: File[],
   setLocalState: (input: string[]) => void,
+  fileType: string,
 ) {
   loading();
-  const IpfsHashes = await Promise.all(
+  const uploadResults = await Promise.all(
     files.map((file) => {
       return IpfsClient().upload(file);
     }),
   );
-  setLocalState(IpfsHashes);
-  toast.dismiss();
-  success();
+  if (uploadResults.every(isSuccessfulUpload)) {
+    setLocalState(uploadResults.map((result) => result.hash));
+    toast.dismiss();
+    success(
+      `${
+        fileType === 'image/*' ? 'Images' : 'Files'
+      } successfully uploaded to IPFS`,
+    );
+  } else if (uploadResults.every(isFailedUpload)) {
+    toast.dismiss();
+    uploadError(
+      `Uploads were unsuccessful with status ${uploadResults[0].status}: 
+      ${uploadResults[0].errorDetails}`,
+    );
+  } else {
+    const successfulUploads = uploadResults.filter(isSuccessfulUpload);
+    const unsuccessfulUploads = uploadResults.filter(isFailedUpload);
+    setLocalState(successfulUploads.map((result) => result.hash));
+    success(
+      `${successfulUploads.length} ${
+        fileType === 'image/*' ? 'images' : 'files'
+      } were successfully upload to IPFS`,
+    );
+    uploadError(
+      `${successfulUploads.length} ${
+        fileType === 'image/*' ? 'images' : 'files'
+      } were unsuccessfully uploaded to IPFS 
+      with status ${unsuccessfulUploads[0].status}: ${
+        unsuccessfulUploads[0].errorDetails
+      }`,
+    );
+  }
 }
 
 interface IpfsProps {
@@ -99,7 +140,7 @@ export default function IpfsUpload({
         } else if (fileType === 'video/*') {
           uploadSingleFile(acceptedFiles, setLocalState, setUploadProgress);
         } else {
-          uploadMultipleFiles(acceptedFiles, setLocalState);
+          uploadMultipleFiles(acceptedFiles, setLocalState, fileType);
         }
       }
       setFiles(
