@@ -1,15 +1,16 @@
-import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
-import { useState, useEffect, useContext } from 'react';
-import { connectors } from '../../containers/Web3/connectors';
-import { utils } from 'ethers';
-import NavBar from '../../containers/NavBar/NavBar';
+import { useWeb3React } from '@web3-react/core';
 import DropdownSelect from 'components/DropdownSelect';
-import { ContractsContext } from 'app/contracts';
+import MainActionButton from 'components/MainActionButton';
+import { setSingleActionModal } from 'context/actions';
+import { store } from 'context/store';
+import { utils } from 'ethers';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import MainActionButton from 'components/MainActionButton';
-import StakingResponseModal from 'components/Staking/StakingResponseModal';
+import { useContext, useEffect, useState } from 'react';
+import NavBar from '../../components/NavBar/NavBar';
+import { connectors } from '../../context/Web3/connectors';
+import { ContractsContext } from '../../context/Web3/contracts';
 
 const ONE_WEEK = 604800;
 const lockPeriods = [
@@ -25,6 +26,7 @@ export default function LockPop() {
   const context = useWeb3React<Web3Provider>();
   const { contracts } = useContext(ContractsContext);
   const { library, account, activate, active } = context;
+  const { dispatch } = useContext(store);
   const [popToLock, setPopToLock] = useState<number>(0);
   const [lockDuration, setLockDuration] = useState<number>(ONE_WEEK);
   const [popBalance, setPopBalance] = useState(0);
@@ -64,6 +66,43 @@ export default function LockPop() {
     }
   }, [contracts]);
 
+  useEffect(() => {
+    if (stakeStatus === 'success') {
+      dispatch(
+        setSingleActionModal({
+          content: `You now have ${voiceCredits.toFixed(2)} voice Credits to vote with.`,
+          title: 'Success',
+          visible: true,
+          type: 'info',
+          onConfirm: {
+            label: 'Close',
+            onClick: () => {
+              setStakeStatus('none');
+              dispatch(setSingleActionModal(false));
+            },
+          },
+        }),
+      );
+    }
+    if (stakeStatus === 'success') {
+      dispatch(
+        setSingleActionModal({
+          content: 'Something went wrong...',
+          title: 'Error',
+          visible: true,
+          type: 'error',
+          onConfirm: {
+            label: 'Close',
+            onClick: () => {
+              setStakeStatus('none');
+              dispatch(setSingleActionModal(false));
+            },
+          },
+        }),
+      );
+    }
+  }, [stakeStatus]);
+
   async function lockPop(): Promise<void> {
     setWait(true);
     const lockedPopInEth = utils.parseEther(popToLock.toString());
@@ -94,22 +133,6 @@ export default function LockPop() {
   return (
     <div className="w-full bg-gray-900 h-screen">
       <NavBar />
-      {stakeStatus === 'error' && (
-        <StakingResponseModal
-          title={'Error'}
-          text={'Something went wrong...'}
-          handleClick={() => setStakeStatus('none')}
-        />
-      )}
-      {stakeStatus === 'success' && (
-        <StakingResponseModal
-          title={'Success'}
-          text={`You now have ${voiceCredits.toFixed(
-            2,
-          )} voice Credits to vote with.`}
-          handleClick={() => setStakeStatus('none')}
-        />
-      )}
       <div className="bg-gray-900">
         <div className="pt-12 px-4 sm:px-6 lg:px-8 lg:pt-20">
           <div className="text-center">

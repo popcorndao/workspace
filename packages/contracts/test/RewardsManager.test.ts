@@ -27,6 +27,11 @@ const RewardSplits = {
 };
 const OwnerInitial = parseEther("10");
 const RewarderInitial = parseEther("5");
+const overrides = {
+  gasLimit: 9999999,
+};
+
+
 let owner: SignerWithAddress,
   rewarder: SignerWithAddress,
   nonOwner: SignerWithAddress;

@@ -96,4 +96,8 @@ contract BeneficiaryRegistry is
   function getBeneficiary(address _address) public view returns (bytes memory) {
     return beneficiariesMap[_address].applicationCid;
   }
+
+  function getBeneficiaryList() public view returns (address[] memory) {
+    return beneficiariesList;
+  }
 }

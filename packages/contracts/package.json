@@ -11,8 +11,8 @@
     "prettier": "prettier --write 'contracts/**/*.sol'",
     "clean": "rimraf ./cache & rimraf ./artifacts",
     "compile": "yarn clean && hardhat compile ",
-    "postinstall": "yarn compile",
-    "test": "mocha"
+    "test": "mocha",
+    "postinstall": "yarn compile"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",

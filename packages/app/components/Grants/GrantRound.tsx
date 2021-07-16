@@ -1,12 +1,10 @@
-import { Votes, Vote, PendingVotes } from 'pages/grant-elections/[type]';
-import { useEffect, useState } from 'react';
-import { useRef } from 'react';
-import BeneficiaryCard, { BeneficiaryMetadata } from './BeneficiaryCard';
-import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
-import {
-  ElectionMetadata,
-} from '@popcorn/utils/Contracts';
+import { BeneficiaryApplication } from '@popcorn/utils';
+import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import { BigNumber, utils } from 'ethers';
+import { PendingVotes, Vote, Votes } from 'pages/grant-elections/[type]';
+import { useEffect, useRef, useState } from 'react';
+import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
+import BeneficiaryCard from '../Beneficiaries/BeneficiaryCard';
 
 interface IGrantRound {
   voiceCredits: number;
@@ -41,7 +39,7 @@ export default function GrantRound({
   const ref = useRef(null);
   const [votes, setVotes] = useState<Votes>({ total: 0 });
   const [beneficiariesWithMetadata, setBeneficiaries] = useState<
-    BeneficiaryMetadata[]
+    BeneficiaryApplication[]
   >([]);
 
   useEffect(() => {
@@ -50,9 +48,11 @@ export default function GrantRound({
     }
   }, [election]);
 
-  const getBeneficiary = (address: string, votes): BeneficiaryMetadata => {
-    const beneficiary = beneficiariesHashMap[process.env.CHAIN_ID || '31337'][address.toLowerCase()];
-    beneficiary.totalVotes = votes[address];
+  const getBeneficiary = (address: string): BeneficiaryApplication => {
+    const beneficiary =
+      beneficiariesHashMap[process.env.CHAIN_ID || '31337'][
+        address.toLowerCase()
+      ];
     return beneficiary;
   };
 
@@ -60,7 +60,7 @@ export default function GrantRound({
     if (votes && election) {
       setBeneficiaries(
         election.registeredBeneficiaries.map((address) =>
-          getBeneficiary(address, votes),
+          getBeneficiary(address),
         ),
       );
     }
@@ -74,7 +74,6 @@ export default function GrantRound({
   if (!election) {
     return <></>;
   }
-
   return (
     <div
       ref={ref}
@@ -82,13 +81,16 @@ export default function GrantRound({
     >
       {beneficiariesWithMetadata?.map((beneficiary) => (
         <BeneficiaryCard
-          key={beneficiary.address}
-          election={election}
+          key={beneficiary.beneficiaryAddress}
+          electionProps={{
+            election: election,
+            pendingVotes: pendingVotes,
+            voiceCredits: voiceCredits,
+            votesAssignedByUser: 0,
+            assignVotes: assignVotes,
+            totalVotes: votes[beneficiary.beneficiaryAddress],
+          }}
           beneficiary={beneficiary}
-          pendingVotes={pendingVotes}
-          voiceCredits={voiceCredits}
-          votesAssignedByUser={0}
-          assignVotes={assignVotes}
         />
       ))}
     </div>

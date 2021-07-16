@@ -35,7 +35,12 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
   uint256[4] public rewardSplits;
   mapping(uint8 => uint256[2]) private rewardLimits;
 
-  enum RewardTargets {Staking, Treasury, Insurance, BeneficiaryVaults}
+  enum RewardTargets {
+    Staking,
+    Treasury,
+    Insurance,
+    BeneficiaryVaults
+  }
 
   event StakingDeposited(address to, uint256 amount);
   event TreasuryDeposited(address to, uint256 amount);
@@ -74,6 +79,10 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
   }
 
   receive() external payable {}
+
+  function getRewardSplits() external view returns (uint256[4] memory) {
+    return rewardSplits;
+  }
 
   /**
    * @notice Overrides existing Staking contract
@@ -173,14 +182,13 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
     require(_balance > 0, "No swappable balance");
 
     _token.safeIncreaseAllowance(address(uniswapV2Router), _balance);
-    uint256[] memory _amounts =
-      uniswapV2Router.swapExactTokensForTokens(
-        _balance,
-        minAmountOut_,
-        path_,
-        address(this),
-        block.timestamp.add(SWAP_TIMEOUT)
-      );
+    uint256[] memory _amounts = uniswapV2Router.swapExactTokensForTokens(
+      _balance,
+      minAmountOut_,
+      path_,
+      address(this),
+      block.timestamp.add(SWAP_TIMEOUT)
+    );
 
     emit TokenSwapped(path_[0], _amounts[0], _amounts[1]);
 
@@ -196,22 +204,18 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
     require(_availableReward > 0, "No POP balance");
 
     //@todo check edge case precision overflow
-    uint256 _stakingAmount =
-      _availableReward.mul(rewardSplits[uint8(RewardTargets.Staking)]).div(
-        100e18
-      );
-    uint256 _treasuryAmount =
-      _availableReward.mul(rewardSplits[uint8(RewardTargets.Treasury)]).div(
-        100e18
-      );
-    uint256 _insuranceAmount =
-      _availableReward.mul(rewardSplits[uint8(RewardTargets.Insurance)]).div(
-        100e18
-      );
-    uint256 _beneficiaryVaultsAmount =
-      _availableReward
-        .mul(rewardSplits[uint8(RewardTargets.BeneficiaryVaults)])
-        .div(100e18);
+    uint256 _stakingAmount = _availableReward
+    .mul(rewardSplits[uint8(RewardTargets.Staking)])
+    .div(100e18);
+    uint256 _treasuryAmount = _availableReward
+    .mul(rewardSplits[uint8(RewardTargets.Treasury)])
+    .div(100e18);
+    uint256 _insuranceAmount = _availableReward
+    .mul(rewardSplits[uint8(RewardTargets.Insurance)])
+    .div(100e18);
+    uint256 _beneficiaryVaultsAmount = _availableReward
+    .mul(rewardSplits[uint8(RewardTargets.BeneficiaryVaults)])
+    .div(100e18);
 
     _distributeToStaking(_stakingAmount);
     _distributeToTreasury(_treasuryAmount);

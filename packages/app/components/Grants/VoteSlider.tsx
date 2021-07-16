@@ -1,33 +1,26 @@
-import { PendingVotes, Vote } from 'pages/grant-elections/[type]';
+import { ElectionProps } from 'components/Beneficiaries/BeneficiaryCard';
+import { BeneficiaryApplication } from '@popcorn/utils';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useState } from 'react';
-import { ElectionMetadata } from '../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
-import { BeneficiaryMetadata } from './BeneficiaryCard';
 
 interface VoteSlider {
-  beneficiary: BeneficiaryMetadata;
-  election: ElectionMetadata;
-  assignVotes?: (grantTerm: number, vote: Vote) => void;
-  voiceCredits?: number;
-  pendingVotes: PendingVotes;
+  beneficiary: BeneficiaryApplication;
+  electionProps: ElectionProps;
 }
 
 export default function VoteSlider({
   beneficiary,
-  election,
-  assignVotes,
-  voiceCredits,
-  pendingVotes,
+  electionProps,
 }: VoteSlider): JSX.Element {
   const [votesAssignedByuser, setVotesAssignedByUser] = useState(0);
 
   const sliderSteps = [
     [0, '0%'],
-    [voiceCredits * 0.25, '25%'],
-    [voiceCredits * 0.5, '50%'],
-    [voiceCredits * 0.75, '75%'],
-    [voiceCredits, '100%'],
+    [electionProps.voiceCredits * 0.25, '25%'],
+    [electionProps.voiceCredits * 0.5, '50%'],
+    [electionProps.voiceCredits * 0.75, '75%'],
+    [electionProps.voiceCredits, '100%'],
   ];
   const sliderMarks = {};
   sliderSteps.forEach(function (step) {
@@ -35,18 +28,27 @@ export default function VoteSlider({
   });
 
   function handleSliderChange(value: number) {
-      if (((voiceCredits - (pendingVotes[election.electionTerm].total)) <= 0)) {
-        if (pendingVotes[election.electionTerm].votes[beneficiary.address] > value) {
-          setVotesAssignedByUser(value);
-          assignVotes(election.electionTerm, { address: beneficiary.address, votes: value });
-        }
-        return;
+    if (electionProps.voiceCredits - electionProps.pendingVotes[electionProps.election.electionTerm].total <= 0) {
+      if (
+        electionProps.pendingVotes[electionProps.election.electionTerm].votes[beneficiary.beneficiaryAddress] >
+        value
+      ) {
+        setVotesAssignedByUser(value);
+        electionProps.assignVotes(electionProps.election.electionTerm, {
+          address: beneficiary.beneficiaryAddress,
+          votes: value,
+        });
       }
-      setVotesAssignedByUser(value);
-     assignVotes(election.electionTerm, { address: beneficiary.address, votes: value });
+      return;
+    }
+    setVotesAssignedByUser(value);
+    electionProps.assignVotes(electionProps.election.electionTerm, {
+      address: beneficiary.beneficiaryAddress,
+      votes: value,
+    });
   }
-  if (election.electionStateStringShort !== 'voting') {
-    return <></>
+  if (electionProps.election.electionStateStringShort !== 'voting') {
+    return <></>;
   }
 
   return (
@@ -54,21 +56,21 @@ export default function VoteSlider({
       <span className="flex flex-row justify-between">
         <p className="text-lg font-medium text-gray-700">Votes</p>
         <span className="text-base text-gray-700 flex flex-row">
-          <p className="font-medium">{beneficiary.totalVotes || 0}</p>
+          <p className="font-medium">{electionProps.totalVotes || 0}</p>
           <p className="mr-4">
-            {votesAssignedByuser > 0 && `+${votesAssignedByuser}`} 
+            {votesAssignedByuser > 0 && `+${votesAssignedByuser}`}
           </p>
         </span>
       </span>
-      {assignVotes && voiceCredits > 0 && (
+      {electionProps.assignVotes && electionProps.voiceCredits > 0 && (
         <div className="w-11/12 ml-1 pb-3">
           <Slider
-            key={beneficiary?.address}
+            key={beneficiary?.beneficiaryAddress}
             className="mt-2"
             value={votesAssignedByuser}
             onChange={(value) => handleSliderChange(value)}
             min={0}
-            max={voiceCredits}
+            max={electionProps.voiceCredits}
             step={1}
             marks={sliderMarks}
             dotStyle={{ backgroundColor: '#93C5FD', border: '#93C5FD' }}

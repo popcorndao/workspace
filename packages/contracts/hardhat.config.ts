@@ -1,16 +1,16 @@
-import "@popcorn/utils/src/envLoader";
-import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
+import "@popcorn/utils/src/envLoader";
 import "@typechain/hardhat";
-import "hardhat-gas-reporter";
-import "hardhat-contract-sizer";
 import { utils } from "ethers";
-
+import { parseEther } from "ethers/lib/utils";
+import "hardhat-contract-sizer";
+import "hardhat-gas-reporter";
+import { task } from "hardhat/config";
+import { DefaultConfiguration } from "./lib/SetToken/Configuration";
+import SetTokenManager from "./lib/SetToken/SetTokenManager";
 import deploy from "./scripts/deployWithValues";
 import deployTestnet from "./scripts/deployWithValuesTestnet";
 import { GrantElectionAdapter } from "./scripts/helpers/GrantElectionAdapter";
-import SetTokenManager from "./lib/SetToken/SetTokenManager";
-import { DefaultConfiguration } from "./lib/SetToken/Configuration";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -140,6 +140,56 @@ task("random", "gets a random number")
     );
     await RandomNumberConsumer.getRandomNumber(Number(seed));
     console.log(`Random number ${await RandomNumberConsumer.randomResult()}`);
+  });
+
+task("rewardsManager:fund", "fund the rewards Manager")
+  .addParam("amount", "fundAmount")
+  .setAction(async (args, hre) => {
+    const [signer] = await hre.ethers.getSigners();
+    const { amount } = args;
+    const mockPOP = new hre.ethers.Contract(
+      process.env.ADDR_POP,
+      require("./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json").abi,
+      signer
+    );
+    await mockPOP.mint(signer.address, utils.parseEther(amount));
+    await mockPOP
+      .connect(signer)
+      .approve(process.env.ADDR_REWARDS_MANAGER, parseEther(amount));
+    const result = await mockPOP
+      .connect(signer)
+      .transfer(process.env.ADDR_REWARDS_MANAGER, parseEther(amount));
+    console.log("done", result);
+  });
+
+task("rewardsManager:addFees", "add to the fee balance")
+  .addParam("amount", "fundAmount")
+  .setAction(async (args, hre) => {
+    const [signer] = await hre.ethers.getSigners();
+    const { amount } = args;
+    const mock3CRV = new hre.ethers.Contract(
+      process.env.ADDR_3CRV,
+      require("./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json").abi,
+      signer
+    );
+    await mock3CRV.mint(signer.address, utils.parseEther(amount));
+    await mock3CRV
+      .connect(signer)
+      .approve(process.env.ADDR_REWARDS_MANAGER, parseEther(amount));
+    const result = await mock3CRV
+      .connect(signer)
+      .transfer(process.env.ADDR_REWARDS_MANAGER, parseEther(amount));
+    console.log("done", result);
+  });
+
+task("send-eth", "send eth to address")
+  .addPositionalParam("address")
+  .setAction(async (args, hre) => {
+    const [signer] = await hre.ethers.getSigners();
+    await signer.sendTransaction({
+      to: args.address,
+      value: hre.ethers.utils.parseEther("2.0"),
+    });
   });
 
 task("hysi:deploy", "deploys set token")

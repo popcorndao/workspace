@@ -7,7 +7,7 @@
     mode = 'prefix'
 
 [context.deploy-preview]
-  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build;"
+  command = "cd packages/utils; yarn build; cd ../../packages/contracts; yarn compile; cd ../../packages/app; yarn build;"
   
 
   [context.deploy-preview.environment]
@@ -28,7 +28,7 @@
     PRIVATE_SALE_DEFAULT_SUPPLY = "7500000"
 
 [context.production]
-  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
+  command = "cd packages/utils; yarn build; cd ../../packages/contracts; yarn compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
   publish = "packages/app/out"
 
   [context.production.environment]
@@ -51,7 +51,7 @@
 
 
 [context.rinkeby]
-  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
+  command = "cd packages/utils; yarn build; cd ../../packages/contracts; yarn compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
 
   publish = "packages/app/out"
   [context.rinkeby.environment]
@@ -72,7 +72,7 @@
     PRIVATE_SALE_DEFAULT_SUPPLY = "7500000"
 
 [context.develop]
-  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build; rm -rf ../../.next; mv .next ../../; mv public ../../; cd ../../"
+  command = "cd packages/utils; yarn build; cd ../../packages/contracts; yarn compile; cd ../../packages/app; yarn build; rm -rf ../../.next; mv .next ../../; mv public ../../; cd ../../"
 
   publish = "packages/app/out"
   [context.develop.environment]
