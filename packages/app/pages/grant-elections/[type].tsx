@@ -3,17 +3,23 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
-import { connectors } from '../../containers/Web3/connectors';
-import ElectionSection from 'containers/GrantElections/ElectionSection';
-import NavBar from '../../containers/NavBar/NavBar';
-import { ContractsContext } from '../../app/contracts';
-import { GrantElectionAdapter, ElectionTerm } from '@popcorn/utils/Contracts';
+import { connectors } from '../../context/Web3/connectors';
+import ElectionSection from 'components/GrantElections/ElectionSection';
+import NavBar from '../../components/NavBar/NavBar';
+import { ContractsContext } from '../../context/Web3/contracts';
+
 import { BigNumber, utils } from 'ethers';
 import capitalize from '@popcorn/utils/capitalize';
-import { ElectionTermIntToName } from '@popcorn/utils/Contracts/GrantElection/GrantElectionAdapter';
-import { ElectionsContext } from '../../app/elections';
-import { store } from 'app/store';
-import { setDualActionModal, setSingleActionModal } from '../../app/actions';
+import GrantElectionAdapter, {
+  ElectionTerm,
+  ElectionTermIntToName,
+} from '@popcorn/utils/Contracts/GrantElection/GrantElectionAdapter';
+import { ElectionsContext } from '../../context/Web3/elections';
+import { store } from '../../context/store';
+import {
+  setDualActionModal,
+  setSingleActionModal,
+} from '../../context/actions';
 
 export interface IGrantRoundFilter {
   active: boolean;
@@ -139,8 +145,7 @@ export default function AllGrants() {
           type: 'info',
           onConfirm: {
             label: 'Done',
-            onClick: () =>
-              setSingleActionModal(false),
+            onClick: () => dispatch(setSingleActionModal(false)),
           },
         });
         let newElectionSignedUpForArray = electionsSignedUpFor;
@@ -155,15 +160,12 @@ export default function AllGrants() {
           type: 'error',
           onConfirm: {
             label: 'Go Back',
-            onClick: () =>
-              setSingleActionModal(false),
+            onClick: () => dispatch(setSingleActionModal(false)),
           },
         });
       });
   }
   const [selectedGrantTerms, setSelectedGrantTerms] = useState<number[]>([]);
-
-
 
   useEffect(() => {
     if (router?.query?.type) {
@@ -271,15 +273,19 @@ export default function AllGrants() {
         .vote(txArgs[0], txArgs[1], txArgs[2]);
 
       dispatch(setDualActionModal(false));
-      dispatch(setSingleActionModal({
-        title: 'Success!',
-        content: 'You have successfully voted in this election. Thank you!',
-        visible: true,
-        onConfirm: {
-          label: 'Close',
-          onClick: () => { dispatch(setSingleActionModal(false))}
-        }
-      }))
+      dispatch(
+        setSingleActionModal({
+          title: 'Success!',
+          content: 'You have successfully voted in this election. Thank you!',
+          visible: true,
+          onConfirm: {
+            label: 'Close',
+            onClick: () => {
+              dispatch(setSingleActionModal(false));
+            },
+          },
+        }),
+      );
       // todo: set succesful tx notification
       // setup listener for confirmation
     } catch (err) {
@@ -292,10 +298,7 @@ export default function AllGrants() {
           type: 'error',
           onConfirm: {
             label: 'Close',
-            onClick: () =>
-              dispatch(
-                setSingleActionModal(false),
-              ),
+            onClick: () => dispatch(setSingleActionModal(false)),
           },
         }),
       );
@@ -353,23 +356,24 @@ export default function AllGrants() {
               assignVotes={assignVotes}
               connectWallet={connectWallet}
               submitVotes={(grantTerm) => {
-                dispatch(setDualActionModal({
-                  content:
-                    'You are about to submit your vote. You will not be able to vote again for this grant election after you submit your vote. \
+                dispatch(
+                  setDualActionModal({
+                    content:
+                      'You are about to submit your vote. You will not be able to vote again for this grant election after you submit your vote. \
                      Confirm to continue.',
-                  title: 'Confirm Vote',
-                  onConfirm: {
-                    label: 'Confirm Vote',
-                    onClick: () => {
-                      submitVotes(grantTerm);
+                    title: 'Confirm Vote',
+                    onConfirm: {
+                      label: 'Confirm Vote',
+                      onClick: () => {
+                        submitVotes(grantTerm);
+                      },
                     },
-                  },
-                  onDismiss: {
-                    label: 'Cancel',
-                    onClick: () =>
-                    setDualActionModal(false),
-                  },
-                }));
+                    onDismiss: {
+                      label: 'Cancel',
+                      onClick: () => dispatch(setDualActionModal(false)),
+                    },
+                  }),
+                );
               }}
               scrollToGrantRound={scrollToGrantRound}
               setGrantRoundFilter={setGrantRoundFilter}
@@ -410,7 +414,10 @@ export default function AllGrants() {
                 </div>
                 <div className="mt-4 text-lg text-gray-600">
                   The {ElectionTermIntToName[election]} grant election is:{' '}
-                  <span className="font-semibold text-gray-900">{elections[election]?.electionStateStringLong}</span>.
+                  <span className="font-semibold text-gray-900">
+                    {elections[election]?.electionStateStringLong}
+                  </span>
+                  .
                 </div>
               </div>
               <div className="mt-6 rounded-md shadow lg:mt-0 lg:ml-10 lg:flex-shrink-0">

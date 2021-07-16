@@ -27,23 +27,22 @@ export default function Example({
   onConfirm,
   onDismiss,
 }: DualActionWideModalProps) {
-  const [open, setOpen] = useState(visible)
+  const [open, setOpen] = useState(visible);
   const cancelButtonRef = useRef();
 
   useEffect(() => {
-    if (visible !== open)
-      setOpen(visible);
+    if (visible !== open) setOpen(visible);
   }, [visible]);
-  
+
   const dismiss = () => {
     setOpen(false);
     setTimeout(onDismiss?.onClick && onDismiss.onClick(), 1000);
-  }
+  };
 
   const confirm = () => {
     setOpen(false);
     setTimeout(() => onConfirm?.onClick && onConfirm.onClick(), 1000);
-  }
+  };
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -100,31 +99,31 @@ export default function Example({
                     {title}
                   </Dialog.Title>
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500">
-                      {content}
-                    </p>
+                    <p className="text-sm text-gray-500">{content}</p>
                   </div>
                 </div>
               </div>
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                 {onConfirm && (
-                <button
-                  type="button"
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
-                  onClick={() => confirm()}
-                >
-                  {onConfirm.label}
-                </button>)}
+                  <button
+                    type="button"
+                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
+                    onClick={() => confirm()}
+                  >
+                    {onConfirm.label}
+                  </button>
+                )}
 
                 {onDismiss && (
-                <button
-                  type="button"
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-                  ref={cancelButtonRef}
-                  onClick={() => dismiss()}
-                >
-                  {onDismiss.label}
-                </button>)}
+                  <button
+                    type="button"
+                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                    ref={cancelButtonRef}
+                    onClick={() => dismiss()}
+                  >
+                    {onDismiss.label}
+                  </button>
+                )}
               </div>
             </div>
           </Transition.Child>

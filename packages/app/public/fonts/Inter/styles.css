@@ -1,19 +1,16 @@
-
 /* inter-200 - latin */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 200;
-  src: local(''),
-       url('/fonts/Inter/inter-v2-latin-200.woff2') format('woff2'), 
+  src: local(''), url('/fonts/Inter/inter-v2-latin-200.woff2') format('woff2');
 }
 /* inter-300 - latin */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 300;
-  src: local(''),
-       url('/fonts/Inter/inter-v2-latin-300.woff2') format('woff2'),
+  src: local(''), url('/fonts/Inter/inter-v2-latin-300.woff2') format('woff2');
 }
 /* inter-regular - latin */
 @font-face {
@@ -21,13 +18,12 @@
   font-style: normal;
   font-weight: 400;
   src: local(''),
-       url('/fonts/Inter/inter-v2-latin-regular.woff2') format('woff2'), 
+    url('/fonts/Inter/inter-v2-latin-regular.woff2') format('woff2');
 }
 /* inter-500 - latin */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 500;
-  src: local(''),
-       url('/fonts/Inter/inter-v2-latin-500.woff2') format('woff2'),
+  src: local(''), url('/fonts/Inter/inter-v2-latin-500.woff2') format('woff2');
 }

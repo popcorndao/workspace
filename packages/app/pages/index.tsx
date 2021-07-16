@@ -1,8 +1,4 @@
-import Navbar from 'containers/NavBar/NavBar';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import React, { useEffect } from 'react';
-import { LandingPage } from '../components/Grants/LandingPage';
 
 const IndexPage = () => {
   return (
