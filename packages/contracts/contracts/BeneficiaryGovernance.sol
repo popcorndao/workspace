@@ -6,8 +6,8 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./Governed.sol";
-import "./IStaking.sol";
-import "./IBeneficiaryRegistry.sol";
+import "./Interfaces/IStaking.sol";
+import "./Interfaces/IBeneficiaryRegistry.sol";
 
 /**
  * @notice This contract is for submitting beneficiary nomination proposals and beneficiary takedown proposals
@@ -25,7 +25,10 @@ contract BeneficiaryGovernance is Governed {
    * BNP for Beneficiary Nomination Proposal
    * BTP for Beneficiary Takedown Proposal
    */
-  enum ProposalType {BeneficiaryNominationProposal, BeneficiaryTakedownProposal}
+  enum ProposalType {
+    BeneficiaryNominationProposal,
+    BeneficiaryTakedownProposal
+  }
 
   enum ProposalStatus {
     New,
@@ -35,7 +38,10 @@ contract BeneficiaryGovernance is Governed {
     Failed
   }
 
-  enum VoteOption {Yes, No}
+  enum VoteOption {
+    Yes,
+    No
+  }
 
   struct ConfigurationOptions {
     uint256 votingPeriod;

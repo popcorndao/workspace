@@ -7,9 +7,9 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "./IStaking.sol";
+import "./Interfaces/IStaking.sol";
 import "./Owned.sol";
-import "./IRewardsManager.sol";
+import "./Interfaces/IRewardsManager.sol";
 import "./Defended.sol";
 
 contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
@@ -66,12 +66,13 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     ) {
       return 0;
     }
-    uint256 timeTillEnd =
-      ((lockedBalances[_address]._end.sub(_currentTime)).div(1 hours)).mul(
-        1 hours
-      );
-    uint256 slope =
-      voiceCredits[_address].div(lockedBalances[_address]._duration);
+    uint256 timeTillEnd = (
+      (lockedBalances[_address]._end.sub(_currentTime)).div(1 hours)
+    )
+    .mul(1 hours);
+    uint256 slope = voiceCredits[_address].div(
+      lockedBalances[_address]._duration
+    );
     return timeTillEnd.mul(slope);
   }
 
@@ -164,8 +165,8 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
       "withdraw balance first"
     );
     lockedBalances[msg.sender]._duration = lockedBalances[msg.sender]
-      ._duration
-      .add(lengthOfTime);
+    ._duration
+    .add(lengthOfTime);
     lockedBalances[msg.sender]._end = lockedBalances[msg.sender]._end.add(
       lengthOfTime
     );
@@ -183,8 +184,8 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     POP.safeTransferFrom(msg.sender, address(this), amount);
     totalLocked = totalLocked.add(amount);
     lockedBalances[msg.sender]._balance = lockedBalances[msg.sender]
-      ._balance
-      .add(amount);
+    ._balance
+    .add(amount);
     _recalculateVoiceCredits();
   }
 
@@ -226,9 +227,9 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
   // todo: multiply voice credits by 10000 to deal with exponent math
   function _recalculateVoiceCredits() internal {
     voiceCredits[msg.sender] = lockedBalances[msg.sender]
-      ._balance
-      .mul(lockedBalances[msg.sender]._duration)
-      .div(365 days * 4);
+    ._balance
+    .mul(lockedBalances[msg.sender]._duration)
+    .div(365 days * 4);
   }
 
   function _lockTokens(uint256 amount, uint256 lengthOfTime) internal {
@@ -256,8 +257,8 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
       }
       if (_amount < lockedBalances[msg.sender]._balance) {
         lockedBalances[msg.sender]._balance = lockedBalances[msg.sender]
-          ._balance
-          .sub(_amount);
+        ._balance
+        .sub(_amount);
       }
     }
   }

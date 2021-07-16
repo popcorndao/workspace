@@ -2,8 +2,8 @@
 
 pragma solidity >=0.7.0 <0.8.0;
 
-import "./IBeneficiaryVaults.sol";
-import "./IBeneficiaryRegistry.sol";
+import "./Interfaces/IBeneficiaryVaults.sol";
+import "./Interfaces/IBeneficiaryRegistry.sol";
 import "./Owned.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -21,7 +21,11 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Owned, ReentrancyGuard {
 
   Vault[3] private vaults;
 
-  enum VaultStatus {Initialized, Open, Closed}
+  enum VaultStatus {
+    Initialized,
+    Open,
+    Closed
+  }
 
   struct Vault {
     uint256 totalAllocated;
@@ -192,10 +196,9 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Owned, ReentrancyGuard {
     );
     require(hasClaimed(vaultId_, beneficiary_) == false, "Already claimed");
 
-    uint256 _reward =
-      vaults[vaultId_].currentBalance.mul(share_).div(
-        vaults[vaultId_].unclaimedShare
-      );
+    uint256 _reward = vaults[vaultId_].currentBalance.mul(share_).div(
+      vaults[vaultId_].unclaimedShare
+    );
 
     require(_reward > 0, "No reward");
 
@@ -222,8 +225,9 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Owned, ReentrancyGuard {
     uint8 _openVaultCount = _getOpenVaultCount();
     require(_openVaultCount > 0, "No open vaults");
 
-    uint256 _availableReward =
-      pop.balanceOf(address(this)).sub(totalVaultedBalance);
+    uint256 _availableReward = pop.balanceOf(address(this)).sub(
+      totalVaultedBalance
+    );
     _allocateRewards(_availableReward);
 
     emit RewardsDistributed(_availableReward);

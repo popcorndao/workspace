@@ -2,11 +2,16 @@
 
 pragma solidity >=0.6.0 <0.8.0;
 
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./MockERC20.sol";
 
 contract MockCurveMetapool {
-  MockERC20 lpToken;
-  MockERC20 threeCrv;
+  using SafeERC20 for MockERC20;
+
+  MockERC20 public lpToken;
+  MockERC20 public threeCrv;
   uint256 virtualPrice = 1e18;
 
   uint256 withdrawalSlippageBps = 10;
@@ -27,7 +32,7 @@ contract MockCurveMetapool {
     returns (uint256)
   {
     threeCrv.transferFrom(msg.sender, address(this), amounts[1]);
-    assert(amounts[1] > min_mint_amounts);
+    require(amounts[1] > min_mint_amounts, "amount lower min");
     lpToken.mint(msg.sender, amounts[1]);
     return amounts[1];
   }
