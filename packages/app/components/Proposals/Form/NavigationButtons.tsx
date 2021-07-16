@@ -11,7 +11,7 @@ export default function NavigationButtons({
   const { currentStep, setCurrentStep, stepLimit, numSteps } = navigation;
   const progressPercentage =
     currentStep === 0 ? 0 : Math.round((100 * currentStep - 1) / numSteps);
-  const canProceed = currentStep !== numSteps && currentStep < stepLimit;
+
   return (
     <footer className="h-10 mb-4 mr-4">
       <div className="grid justify-items-stretch ...">
@@ -36,15 +36,9 @@ export default function NavigationButtons({
           </button>
           <button
             type="button"
-            className={
-              canProceed
-                ? '-ml-px relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500'
-                : '-ml-px relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-200 hover:bg-gray-50 focus:z-10 focus:outline-none '
-            }
+            className="-ml-px relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
             onClick={() => {
-              if (canProceed) {
-                setCurrentStep(currentStep + 1);
-              }
+              setCurrentStep(currentStep + 1);
             }}
           >
             <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />

@@ -26,7 +26,10 @@ export default function BeneficiaryPage({
           <VideoSideBar {...beneficiary} />
           <PhotoSideBar {...beneficiary} />
         </div>
-        <BeneficiaryInformation {...beneficiary} />
+        <BeneficiaryInformation
+          beneficiary={beneficiary}
+          isProposalPreview={isProposalPreview}
+        />
       </div>
       {!isProposalPreview && <TriggerTakedownProposal />}
     </div>

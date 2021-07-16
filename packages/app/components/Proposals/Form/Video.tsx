@@ -31,7 +31,7 @@ export default function ProfileImage({
           localState={formData.files.video}
           setLocalState={updateVideo}
           fileDescription={'a Video'}
-          fileInstructions={`Upload a video less than ${maxVideoSizeMB}mb`}
+          fileInstructions={`Video must be less than ${maxVideoSizeMB}mb`}
           fileType={'video/*'}
           numMaxFiles={1}
           maxFileSizeMB={maxVideoSizeMB}

@@ -60,14 +60,14 @@ export default function HeaderImage({
           setLocalState={updateHeaderImage}
           fileDescription={'a Header Image'}
           fileInstructions={
-            'Ideal dimensions - 1500px x 500px and less than 5mb'
+            'Image should be narrow (ideally 150px x 150px) and less than 5mb'
           }
           fileType={'image/*'}
           numMaxFiles={1}
           maxFileSizeMB={5}
         />
         <DisplayImages localState={formData?.files?.headerImage?.image} />
-        <div className="mt-8 w-80">
+        <div className="mx-auto mt-8 w-80">
           <p>Image Description</p>
           <ControlledTextInput
             inputValue={formData?.files?.headerImage?.description}
