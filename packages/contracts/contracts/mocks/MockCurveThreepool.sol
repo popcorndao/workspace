@@ -4,10 +4,8 @@ pragma solidity >=0.6.0 <0.8.0;
 
 import "./MockERC20.sol";
 
-contract MockCurveMetapool {
+contract MockCurveThreepool {
   MockERC20 lpToken;
-  MockERC20 token;
-  MockERC20 threeCrv;
   MockERC20 dai;
   MockERC20 usdc;
   MockERC20 usdt;
@@ -20,28 +18,19 @@ contract MockCurveMetapool {
   MockERC20[] tokens;
 
   constructor(
-    address token_,
     address lpToken_,
-    address threeCrv_,
     address dai_,
     address usdc_,
     address usdt_
   ) {
-    token = MockERC20(token_);
     lpToken = MockERC20(lpToken_);
-    threeCrv = MockERC20(threeCrv_);
     dai = MockERC20(dai_);
     usdc = MockERC20(usdc_);
     usdt = MockERC20(usdt_);
-    tokens = [token, threeCrv];
+    tokens = [dai, usdc, usdt];
   }
 
-  function coins() external view returns (address[2] memory) {
-    address[2] memory coins = [address(token), address(threeCrv) ];
-    return coins;
-  }
-
-  function base_coins() external view returns (address[3] memory) {
+  function coins() external view returns (address[3] memory) {
     address[3] memory coins = [address(dai), address(usdc), address(usdt)];
     return coins;
   }
@@ -51,7 +40,7 @@ contract MockCurveMetapool {
   }
 
   function add_liquidity(
-    uint256[2] calldata amounts,
+    uint256[3] calldata amounts,
     uint256 min_mint_amounts
   ) external returns (uint256) {
     uint256 lpTokens;
@@ -67,7 +56,7 @@ contract MockCurveMetapool {
     uint256 amount,
     int128 i,
     uint256 min_underlying_amount
-  ) external returns (uint256) {
+  ) external {
     lpToken.transferFrom(msg.sender, address(this), amount);
 
     uint256 slippage = (amount * withdrawalSlippageBps) / 10000;
@@ -77,7 +66,6 @@ contract MockCurveMetapool {
     tokens[i].approve(address(this), transferOut);
     tokens[i].mint(address(this), transferOut);
     tokens[i].transferFrom(address(this), msg.sender, transferOut);
-    return transferOut;
   }
 
   // Test helpers

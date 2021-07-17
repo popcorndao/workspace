@@ -35,7 +35,8 @@ contract MockCurveDepositZap {
   function add_liquidity(
     address pool,
     uint256[4] calldata amounts,
-    uint256 min_mint_amounts
+    uint256 min_mint_amounts,
+    address receiver
   ) external returns (uint256) {
     uint256 lpTokens;
     for (uint8 i = 0; i < tokens.length; i++) {

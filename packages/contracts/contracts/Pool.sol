@@ -89,10 +89,8 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
     _takeFees();
 
     uint256 sharesBefore = balanceOf(msg.sender);
-    console.log("sharesBefore: ", sharesBefore);
     super.deposit(amount);
     uint256 sharesAfter = balanceOf(msg.sender);
-    console.log("sharesAfter: ", sharesAfter);
     uint256 shares = sharesAfter.sub(sharesBefore);
 
     emit Deposit(msg.sender, amount, shares);

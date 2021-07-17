@@ -3,6 +3,7 @@ import {
   MockERC20,
   MockCurveDepositZap,
   MockCurveAddressProvider,
+  MockCurveThreepool,
   MockCurveMetapool,
   MockCurveRegistry,
   MockYearnV2Vault,
@@ -24,6 +25,7 @@ interface Contracts {
   mockUSDC: MockERC20;
   mockUSDT: MockERC20;
   mockCurveDepositZap: MockCurveDepositZap;
+  mockCurveThreepool: MockCurveThreepool;
   mockCurveMetapool: MockCurveMetapool;
   mockCurveRegistry: MockCurveRegistry;
   mockCurveAddressProvider: MockCurveAddressProvider;
@@ -62,6 +64,18 @@ async function deployContracts(): Promise<Contracts> {
     await MockERC20.deploy("Mock USDT", "USDT", 18)
   ).deployed();
 
+  const MockCurveThreepool = await ethers.getContractFactory(
+    "MockCurveThreepool"
+  );
+  const mockCurveThreepool = await (
+    await MockCurveThreepool.deploy(
+      mock3crv.address,
+      mockDai.address,
+      mockUSDC.address,
+      mockUSDT.address
+    )
+  ).deployed();
+
   const MockCurveMetapool = await ethers.getContractFactory(
     "MockCurveMetapool"
   );
@@ -93,7 +107,7 @@ async function deployContracts(): Promise<Contracts> {
     "MockCurveRegistry"
   );
   const mockCurveRegistry = await (
-    await MockCurveRegistry.deploy(mockCurveMetapool.address)
+    await MockCurveRegistry.deploy(mockCurveMetapool.address, mockCurveThreepool.address, mock3crv.address)
   ).deployed();
 
   const MockCurveAddressProvider = await ethers.getContractFactory(
@@ -142,6 +156,7 @@ async function deployContracts(): Promise<Contracts> {
     mockUSDC,
     mockUSDT,
     mockCurveDepositZap,
+    mockCurveThreepool,
     mockCurveMetapool,
     mockCurveRegistry,
     mockCurveAddressProvider,
@@ -185,10 +200,14 @@ describe("Zapper", function () {
       );
     });
 
-    it("gets Curve pool for LP token", async function () {
-      expect(
-        await contracts.zapper.curvePoolAddress(contracts.pool.address)
+    it("gets Curve metapool for LP token", async function () { expect(
+        await contracts.zapper.curveMetapoolAddress(contracts.pool.address)
       ).to.equal(contracts.mockCurveMetapool.address);
+    });
+
+    it("gets Curve base pool for LP token", async function () { expect(
+        await contracts.zapper.curveBasepoolAddress(contracts.pool.address)
+      ).to.equal(contracts.mockCurveThreepool.address);
     });
 
     it("gets supported deposit tokens for underlying Curve pool", async function () {
@@ -334,7 +353,7 @@ describe("Zapper", function () {
           parseEther("1000")
         );
       expect(await contracts.mockUSDC.balanceOf(depositor.address)).to.equal(
-        parseEther("994.004998740049419223")
+        parseEther("993.010993741309369804")
       );
     });
   });
